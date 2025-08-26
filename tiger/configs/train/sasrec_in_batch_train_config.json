@@ -1,0 +1,146 @@
+{
+  "experiment_name": "sasrec_in_batch_test",
+  "best_metric": "eval/ndcg@20",
+  "dataset": {
+    "type": "sequence",
+    "path_to_data_dir": "../data",
+    "name": "Beauty",
+    "max_sequence_length": 50,
+    "samplers": {
+      "num_negatives_val": 100,
+      "type": "next_item_prediction",
+      "negative_sampler_type": "random"
+    }
+  },
+  "dataloader": {
+    "train": {
+      "type": "torch",
+      "batch_size": 256,
+      "batch_processor": {
+        "type": "basic"
+      },
+      "drop_last": true,
+      "shuffle": true
+    },
+    "validation": {
+      "type": "torch",
+      "batch_size": 256,
+      "batch_processor": {
+        "type": "basic"
+      },
+      "drop_last": false,
+      "shuffle": false
+    }
+  },
+  "model": {
+    "type": "sasrec_in_batch",
+    "sequence_prefix": "item",
+    "positive_prefix": "positive",
+    "negative_prefix": "negative",
+    "candidate_prefix": "candidates",
+    "embedding_dim": 64,
+    "num_heads": 2,
+    "num_layers": 2,
+    "dim_feedforward": 256,
+    "dropout": 0.3,
+    "activation": "gelu",
+    "use_ce": true,
+    "layer_norm_eps": 1e-9,
+    "initializer_range": 0.02
+  },
+  "optimizer": {
+    "type": "basic",
+    "optimizer": {
+      "type": "adam",
+      "lr": 0.001
+    },
+    "clip_grad_threshold": 5.0
+  },
+  "loss": {
+    "type": "composite",
+    "losses": [
+      {
+        "type": "sampled_softmax",
+        "queries_prefix": "query_embeddings",
+        "positive_prefix": "positive_embeddings",
+        "negative_prefix": "negative_embeddings",
+        "output_prefix": "downstream_loss"
+      }
+    ],
+    "output_prefix": "loss"
+  },
+  "callback": {
+    "type": "composite",
+    "callbacks": [
+      {
+        "type": "metric",
+        "on_step": 1,
+        "loss_prefix": "loss"
+      },
+      {
+        "type": "validation",
+        "on_step": 64,
+        "pred_prefix": "logits",
+        "labels_prefix": "labels",
+        "metrics": {
+          "ndcg@5": {
+            "type": "ndcg",
+            "k": 5
+          },
+          "ndcg@10": {
+            "type": "ndcg",
+            "k": 10
+          },
+          "ndcg@20": {
+            "type": "ndcg",
+            "k": 20
+          },
+          "recall@5": {
+            "type": "recall",
+            "k": 5
+          },
+          "recall@10": {
+            "type": "recall",
+            "k": 10
+          },
+          "recall@20": {
+            "type": "recall",
+            "k": 20
+          }
+        }
+      },
+      {
+        "type": "eval",
+        "on_step": 256,
+        "pred_prefix": "logits",
+        "labels_prefix": "labels",
+        "metrics": {
+          "ndcg@5": {
+            "type": "ndcg",
+            "k": 5
+          },
+          "ndcg@10": {
+            "type": "ndcg",
+            "k": 10
+          },
+          "ndcg@20": {
+            "type": "ndcg",
+            "k": 20
+          },
+          "recall@5": {
+            "type": "recall",
+            "k": 5
+          },
+          "recall@10": {
+            "type": "recall",
+            "k": 10
+          },
+          "recall@20": {
+            "type": "recall",
+            "k": 20
+          }
+        }
+      }
+    ]
+  }
+}

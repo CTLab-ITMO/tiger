@@ -1,0 +1,730 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="4b045e52-76d2-48a7-a568-d057df908a4a" name="Changes" comment="test">
+      <change afterPath="$PROJECT_DIR$/dataset/samplers/identity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../configs/train/rqvae_train_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/../configs/train/rqvae_train_config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataset/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/dataset/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataset/samplers/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/dataset/samplers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataset/samplers/cl4srec.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dataset/samplers/duorec.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/loss/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/loss/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/bert4rec_cls.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/cl4srec.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/deepfm.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/duorec.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/graph_seq_rec.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/gru4rec.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/gtorec.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/lightgcn.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/mclsr.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/mrgsrec.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/ngcf.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/pop.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/pure_mf.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/pure_svd.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/s3rec.py" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$/.." value="iskbaga/rqvae_large" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+    <option name="RESET_MODE" value="SOFT" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;iskbaga&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/CTLab-ITMO/IRec.git&quot;,
+    &quot;accountId&quot;: &quot;b48d14c2-f163-4f53-ad04-97e51ac064ff&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="2tjJT0nUv3DpprREanFQxyqimI4" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.Python tests for NewTigerTest.MyTestCase.executor": "Run",
+    "Python tests.Python tests for NewTigerTest.MyTestCase.test_autoregressive_decoder.executor": "Run",
+    "Python tests.Python tests for NewTigerTest.MyTestCase.test_beam_search_codebook_selection.executor": "Run",
+    "Python tests.Python tests for NewTigerTest.MyTestCase.test_beam_search_position_embedding.executor": "Run",
+    "Python tests.Python tests for NewTigerTest.MyTestCase.test_forward_training.executor": "Run",
+    "Python tests.Python tests for NewTigerTest.MyTestCase.test_only_decoder_data.executor": "Run",
+    "Python tests.Python tests for TigerModelTest.TigerModelTest.executor": "Run",
+    "Python tests.Python tests in NewTigerTest.py.executor": "Run",
+    "Python tests.Python tests in rqvae_test.py.executor": "Run",
+    "Python.rqvae test.executor": "Run",
+    "Python.rqvae_data.executor": "Run",
+    "Python.rqvae_to_letter_format.executor": "Run",
+    "Python.tiger.executor": "Run",
+    "Python.train letter.executor": "Run",
+    "Python.train rqvae.executor": "Run",
+    "Python.train tiger sasrec.executor": "Run",
+    "Python.train tiger.executor": "Run",
+    "Python.tree_comparing.executor": "Run",
+    "Python.trie test.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "iskbaga/tiger__reduced",
+    "last_opened_file_path": "/Users/iskanderbagautdinov/Repositories/recsys-itmo-lab/IRec/modeling/models",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings module-name="modeling" is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+        <option name="myModuleName" value="modeling" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/models" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.train rqvae">
+    <configuration name="rqvae test" type="PythonConfigurationType" factoryName="Python">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (MRGSRec)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/rqvae_utils/rqvae_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="rqvae_to_letter_format" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/.." />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/rqvae_utils/rqvae_to_letter_format.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train letter" type="PythonConfigurationType" factoryName="Python">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1 PYTORCH_ENABLE_MPS_FALLBACK=1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (MRGSRec)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../notebooks" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train.py" />
+      <option name="PARAMETERS" value="--params ../configs/train/tiger_train_config.json" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train rqvae" type="PythonConfigurationType" factoryName="Python">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="OMP_NUM_THREADS" value="1" />
+        <env name="PYTORCH_MPS_DISABLE" value="1" />
+        <env name="KMP_DUPLICATE_LIB_OK" value="TRUE" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (MRGSRec)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../notebooks" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train.py" />
+      <option name="PARAMETERS" value="--params ../configs/train/rqvae_train_config.json" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train tiger sasrec" type="PythonConfigurationType" factoryName="Python">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1 PYTORCH_ENABLE_MPS_FALLBACK=1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (MRGSRec)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../notebooks" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train.py" />
+      <option name="PARAMETERS" value="--params ../configs/train/tiger_from_sasrec_train_config.json" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="train tiger" type="PythonConfigurationType" factoryName="Python">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1 PYTORCH_ENABLE_MPS_FALLBACK=1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (MRGSRec)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/../notebooks" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train.py" />
+      <option name="PARAMETERS" value="--params ../configs/train/tiger_train_config.json" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="trie test" type="PythonConfigurationType" factoryName="Python">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (MRGSRec)" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/rqvae_utils/tree_comparing.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for NewTigerTest.MyTestCase.test_autoregressive_decoder" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;NewTigerTest.MyTestCase.test_autoregressive_decoder&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for NewTigerTest.MyTestCase.test_beam_search_codebook_selection" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;NewTigerTest.MyTestCase.test_beam_search_codebook_selection&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for NewTigerTest.MyTestCase.test_beam_search_position_embedding" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;NewTigerTest.MyTestCase.test_beam_search_position_embedding&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Python tests for NewTigerTest.MyTestCase.test_only_decoder_data" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="modeling" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="_new_additionalArguments" value="&quot;&quot;" />
+      <option name="_new_target" value="&quot;NewTigerTest.MyTestCase.test_only_decoder_data&quot;" />
+      <option name="_new_targetType" value="&quot;PYTHON&quot;" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.rqvae test" />
+      <item itemvalue="Python.train rqvae" />
+      <item itemvalue="Python.train tiger sasrec" />
+      <item itemvalue="Python.train tiger" />
+      <item itemvalue="Python.train letter" />
+      <item itemvalue="Python.trie test" />
+      <item itemvalue="Python.rqvae_to_letter_format" />
+      <item itemvalue="Python tests.Python tests for NewTigerTest.MyTestCase.test_autoregressive_decoder" />
+      <item itemvalue="Python tests.Python tests for NewTigerTest.MyTestCase.test_beam_search_codebook_selection" />
+      <item itemvalue="Python tests.Python tests for NewTigerTest.MyTestCase.test_beam_search_position_embedding" />
+      <item itemvalue="Python tests.Python tests for NewTigerTest.MyTestCase.test_only_decoder_data" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.rqvae_to_letter_format" />
+        <item itemvalue="Python tests.Python tests for NewTigerTest.MyTestCase.test_beam_search_codebook_selection" />
+        <item itemvalue="Python tests.Python tests for NewTigerTest.MyTestCase.test_beam_search_position_embedding" />
+        <item itemvalue="Python tests.Python tests for NewTigerTest.MyTestCase.test_only_decoder_data" />
+        <item itemvalue="Python tests.Python tests for NewTigerTest.MyTestCase.test_autoregressive_decoder" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-python-sdk-0e3be3396995-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.23339.19" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4b045e52-76d2-48a7-a568-d057df908a4a" name="Changes" comment="" />
+      <created>1740859553589</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1740859553589</updated>
+      <workItem from="1745605714908" duration="263000" />
+    </task>
+    <task id="LOCAL-00001" summary="test">
+      <option name="closed" value="true" />
+      <created>1742078661192</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1742078661192</updated>
+    </task>
+    <task id="LOCAL-00002" summary="test 2">
+      <option name="closed" value="true" />
+      <created>1742086222072</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1742086222072</updated>
+    </task>
+    <task id="LOCAL-00003" summary="test 3">
+      <option name="closed" value="true" />
+      <created>1742086562049</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1742086562049</updated>
+    </task>
+    <task id="LOCAL-00004" summary="стабильный дебаг">
+      <option name="closed" value="true" />
+      <created>1742137933243</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1742137933243</updated>
+    </task>
+    <task id="LOCAL-00005" summary="стабильный дебаг 2">
+      <option name="closed" value="true" />
+      <created>1742139391730</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1742139391730</updated>
+    </task>
+    <task id="LOCAL-00006" summary="тест">
+      <option name="closed" value="true" />
+      <created>1742139611515</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1742139611515</updated>
+    </task>
+    <task id="LOCAL-00007" summary="исправление еще">
+      <option name="closed" value="true" />
+      <created>1742398410253</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1742398410253</updated>
+    </task>
+    <task id="LOCAL-00008" summary="исправление еще 2">
+      <option name="closed" value="true" />
+      <created>1742399217124</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1742399217124</updated>
+    </task>
+    <task id="LOCAL-00009" summary="исправление еще 3">
+      <option name="closed" value="true" />
+      <created>1742403842695</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1742403842695</updated>
+    </task>
+    <task id="LOCAL-00010" summary="попытка 2">
+      <option name="closed" value="true" />
+      <created>1742551987108</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1742551987108</updated>
+    </task>
+    <task id="LOCAL-00011" summary="попытка 3">
+      <option name="closed" value="true" />
+      <created>1742641221142</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1742641221142</updated>
+    </task>
+    <task id="LOCAL-00012" summary="попытка 4">
+      <option name="closed" value="true" />
+      <created>1742642840090</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1742642840090</updated>
+    </task>
+    <task id="LOCAL-00013" summary="попытка 5">
+      <option name="closed" value="true" />
+      <created>1742665332959</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1742665332959</updated>
+    </task>
+    <task id="LOCAL-00014" summary="попытка 6">
+      <option name="closed" value="true" />
+      <created>1742666575789</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1742666575789</updated>
+    </task>
+    <task id="LOCAL-00015" summary="попытка 7">
+      <option name="closed" value="true" />
+      <created>1742667850650</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1742667850650</updated>
+    </task>
+    <task id="LOCAL-00016" summary="попытка 8">
+      <option name="closed" value="true" />
+      <created>1742668359682</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1742668359683</updated>
+    </task>
+    <task id="LOCAL-00017" summary="надеюсь последнее временное исправление (get_item_embeddings в энкодере обучал другое совсем, вернул старое сейчас)">
+      <option name="closed" value="true" />
+      <created>1742670430965</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1742670430965</updated>
+    </task>
+    <task id="LOCAL-00018" summary="минимальный шаг к тайгеру, теперь эмбеддинги собираются в процессе обучения">
+      <option name="closed" value="true" />
+      <created>1742670801358</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1742670801358</updated>
+    </task>
+    <task id="LOCAL-00019" summary="временный дебаг без иммитации резидуалов">
+      <option name="closed" value="true" />
+      <created>1742671758948</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1742671758948</updated>
+    </task>
+    <task id="LOCAL-00020" summary="этот коммит надо будет убрать">
+      <option name="closed" value="true" />
+      <created>1742736449489</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1742736449489</updated>
+    </task>
+    <task id="LOCAL-00021" summary="отдебаженный">
+      <option name="closed" value="true" />
+      <created>1742738104633</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1742738104633</updated>
+    </task>
+    <task id="LOCAL-00022" summary="одни данные на трейне и валиде">
+      <option name="closed" value="true" />
+      <created>1742741648955</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1742741648955</updated>
+    </task>
+    <task id="LOCAL-00023" summary="одни данные на трейне и валиде 2">
+      <option name="closed" value="true" />
+      <created>1742741976672</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1742741976672</updated>
+    </task>
+    <task id="LOCAL-00024" summary="одни данные на трейне и валиде 3">
+      <option name="closed" value="true" />
+      <created>1742744323119</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1742744323119</updated>
+    </task>
+    <task id="LOCAL-00025" summary="без резидуала">
+      <option name="closed" value="true" />
+      <created>1743244848843</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1743244848843</updated>
+    </task>
+    <task id="LOCAL-00026" summary="без резидуала уменьшенный датасет">
+      <option name="closed" value="true" />
+      <created>1743248519209</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1743248519209</updated>
+    </task>
+    <task id="LOCAL-00027" summary="увеличил threshold">
+      <option name="closed" value="true" />
+      <created>1743248960307</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1743248960307</updated>
+    </task>
+    <task id="LOCAL-00028" summary="уменьшил on_step у sasrec semantic">
+      <option name="closed" value="true" />
+      <created>1743250416676</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1743250416676</updated>
+    </task>
+    <task id="LOCAL-00029" summary="поменял rqvae">
+      <option name="closed" value="true" />
+      <created>1744870135696</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1744870135696</updated>
+    </task>
+    <task id="LOCAL-00030" summary="testTiger">
+      <option name="closed" value="true" />
+      <created>1749417049687</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1749417049687</updated>
+    </task>
+    <task id="LOCAL-00031" summary="testTiger">
+      <option name="closed" value="true" />
+      <created>1750596367996</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1750596367996</updated>
+    </task>
+    <task id="LOCAL-00032" summary="changes">
+      <option name="closed" value="true" />
+      <created>1750625129016</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1750625129016</updated>
+    </task>
+    <task id="LOCAL-00033" summary="changes 2">
+      <option name="closed" value="true" />
+      <created>1750625804378</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1750625804379</updated>
+    </task>
+    <task id="LOCAL-00034" summary="add beam search draft (only argmaxes)">
+      <option name="closed" value="true" />
+      <created>1751578638313</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1751578638313</updated>
+    </task>
+    <task id="LOCAL-00035" summary="add beam search draft (only argmaxes)">
+      <option name="closed" value="true" />
+      <created>1751578794474</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1751578794474</updated>
+    </task>
+    <task id="LOCAL-00036" summary="test">
+      <option name="closed" value="true" />
+      <created>1753310147788</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1753310147788</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="peterochek/rqvae_large" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="попытка 2" />
+    <MESSAGE value="попытка 3" />
+    <MESSAGE value="попытка 4" />
+    <MESSAGE value="попытка 5" />
+    <MESSAGE value="попытка 6" />
+    <MESSAGE value="попытка 7" />
+    <MESSAGE value="попытка 8" />
+    <MESSAGE value="надеюсь последнее временное исправление (get_item_embeddings в энкодере обучал другое совсем, вернул старое сейчас)" />
+    <MESSAGE value="минимальный шаг к тайгеру, теперь эмбеддинги собираются в процессе обучения" />
+    <MESSAGE value="временный дебаг без иммитации резидуалов" />
+    <MESSAGE value="этот коммит надо будет убрать" />
+    <MESSAGE value="отдебаженный" />
+    <MESSAGE value="одни данные на трейне и валиде" />
+    <MESSAGE value="одни данные на трейне и валиде 2" />
+    <MESSAGE value="одни данные на трейне и валиде 3" />
+    <MESSAGE value="без резидуала" />
+    <MESSAGE value="без резидуала уменьшенный датасет" />
+    <MESSAGE value="увеличил threshold" />
+    <MESSAGE value="уменьшил on_step у sasrec semantic" />
+    <MESSAGE value="поменял rqvae" />
+    <MESSAGE value="testTiger" />
+    <MESSAGE value="changes" />
+    <MESSAGE value="changes 2" />
+    <MESSAGE value="add beam search draft (only argmaxes)" />
+    <MESSAGE value="test" />
+    <option name="LAST_COMMIT_MESSAGE" value="test" />
+  </component>
+</project>
