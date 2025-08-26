@@ -4,7 +4,7 @@ from typing import Dict, Optional
 from dataclasses import dataclass
 
 from models import TorchModel
-from utils import create_masked_tensor, DEVICE
+from utils import create_masked_tensor
 
 
 @dataclass
