@@ -23,11 +23,7 @@ def main():
     logger.info(f'Config: \n{json.dumps(config, indent=2)}')
 
     checkpoint_config = config['checkpoint']
-    ckpt_path = os.path.join(
-        checkpoint_config['root_path'],
-        f"alpha{checkpoint_config['alpha']}-beta{checkpoint_config['beta']}",
-        checkpoint_config['checkpoint_name']
-    )
+    ckpt_path = os.path.join(checkpoint_config['root_path'])
 
     logger.info(f'Loading checkpoint from: {ckpt_path}')
 
@@ -178,7 +174,7 @@ def main():
     logger.info(f'Collision handling completed after {tt} iterations')
 
     output_config = config['output']
-    output_dir = output_config['output_dir'].format(dataset=config['dataset'])
+    output_dir = output_config['output_dir'].format(dataset=config['dataset'], experiment_name=config['experiment_name'])
     output_filename = output_config['output_filename'].format(
         dataset=config['dataset'],
         epoch=checkpoint_config['epoch'],

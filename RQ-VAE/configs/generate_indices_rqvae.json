@@ -13,7 +13,12 @@
     "max_collision_iterations": 20,
     "n_clusters": 10
   },
+  "output": {
+    "output_dir": "./data/{dataset}/{experiment_name}",
+    "output_filename": "{dataset}.index.epoch{epoch}.alpha{alpha}-beta{beta}.json"
+  },
   "collision_handling": {
+    "use_sinkhorn": true,
     "sk_epsilon_default": 0.003,
     "sk_epsilon_override": 0.0
   }
