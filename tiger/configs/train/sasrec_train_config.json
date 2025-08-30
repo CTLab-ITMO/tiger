@@ -1,7 +1,7 @@
 {
   "experiment_name": "4096_2000_my_sasrec_beauty_letter_64",
   "best_metric": "validation/ndcg@20",
-  "train_epochs_num": 2000,
+  "train_epochs_num": 200,
   "early_stopping_threshold": 40,
   "dataset": {
     "path_to_data_dir": "../data",

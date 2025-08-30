@@ -7,6 +7,7 @@ import numpy as np
 import torch
 
 from .tensorboards import GLOBAL_TENSORBOARD_WRITER, LOGS_DIR
+
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 
@@ -113,3 +114,10 @@ def create_masked_tensor(data, lengths):
     padded_tensor[mask] = data
 
     return padded_tensor, mask
+
+def save_sasrec_embeds(model, output_path):
+    with torch.no_grad():
+        item_embeddings = model._item_embeddings.weight.data.cpu().numpy()[1:]  # (num_items, embedding_dim)
+        tensor_embeddings = torch.from_numpy(item_embeddings).float()
+    assert tensor_embeddings.shape == (model._num_items, model._embedding_dim)
+    torch.save(tensor_embeddings, output_path)

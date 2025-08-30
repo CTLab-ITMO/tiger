@@ -5,6 +5,7 @@ import os
 import torch
 from torch.utils.data import DataLoader
 
+from modeling import utils
 from modeling.callbacks import CompositeCallback
 from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
 from modeling.dataloader.base import TorchDataloader
@@ -15,7 +16,6 @@ from modeling.metric.base import NDCGMetric, RecallMetric, CoverageMetric
 from modeling.models import SasRecModel
 from modeling.optimizer.base import BasicOptimizer, OPTIMIZERS
 from modeling.utils import parse_args, create_logger, fix_random_seed, tensorboards
-from modeling import utils
 
 logger = create_logger(name=__name__)
 seed_val = 42
@@ -227,9 +227,22 @@ def main():
     )
 
     logger.debug('Saving model...')
-    checkpoint_path = '../checkpoints/{}_final_state.pth'.format(config['experiment_name'])
+    ckpt_dir = f'../checkpoints/{config['experiment_name']}'
+    os.makedirs(ckpt_dir, exist_ok=True)
+
+    checkpoint_path = '{}/{}_final_state.pth'.format(
+        ckpt_dir,
+        config['experiment_name']
+    )
     torch.save(model.state_dict(), checkpoint_path)
     logger.debug('Saved model as {}'.format(checkpoint_path))
+
+    item_embeds_path = '{}/{}_item_embeddings.pt'.format(
+        ckpt_dir,
+        config['experiment_name']
+    )
+    utils.save_sasrec_embeds(model, item_embeds_path)
+    logger.debug('Saved item embeddings to {}'.format(item_embeds_path))
 
 
 if __name__ == '__main__':
