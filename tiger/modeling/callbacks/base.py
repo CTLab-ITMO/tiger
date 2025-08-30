@@ -6,9 +6,8 @@ import torch
 
 from .. import utils
 from ..metric import BaseMetric, StatefullMetric
-from ..utils import create_logger, DEVICE
 
-logger = create_logger(name=__name__)
+logger = utils.create_logger(name=__name__)
 
 
 class BaseCallback:
@@ -203,7 +202,7 @@ class InferenceCallback(BaseCallback):
                 for batch in self._get_dataloader():
 
                     for key, value in batch.items():
-                        batch[key] = value.to(DEVICE)
+                        batch[key] = value.to(utils.DEVICE)
 
                     batch.update(self._model(batch))
 
