@@ -39,7 +39,7 @@ class TigerRecommenderConfig:
         self.pad_token_id = self.num_semantic_ids * self.semantic_vocab_size + 4
 
 
-class TigerModelT5(TorchModel, config_name='tiger_t5'):
+class TigerModelT5(TorchModel):
     def __init__(
             self,
             sequence_prefix,

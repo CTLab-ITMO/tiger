@@ -2,7 +2,7 @@ import torch
 from ..models import SequentialTorchModel
 
 
-class SasRecModel(SequentialTorchModel, config_name='sasrec'):
+class SasRecModel(SequentialTorchModel):
 
     def __init__(
             self,

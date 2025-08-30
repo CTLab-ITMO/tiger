@@ -14,7 +14,7 @@ SCHEDULERS = {
 class BaseOptimizer:
     pass
 
-class BasicOptimizer(BaseOptimizer, config_name='basic'):
+class BasicOptimizer(BaseOptimizer):
     def __init__(self, model, optimizer, scheduler=None, clip_grad_threshold=None):
         self._model = model
         self._optimizer = optimizer

@@ -5,17 +5,17 @@ import os
 import torch
 from torch.utils.data import DataLoader
 
-import utils
-from tiger.modeling.callbacks import CompositeCallback
-from tiger.modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
-from tiger.modeling.dataloader import TorchDataloader
-from tiger.modeling.dataloader.batch_processors import LetterBatchProcessor
-from tiger.modeling.dataset.base import LetterFullDataset
-from tiger.modeling.loss import IdentityMapLoss, CompositeLoss
-from tiger.modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
-from tiger.modeling.models import TigerModelT5
-from tiger.modeling.optimizer.base import BasicOptimizer, OPTIMIZERS
-from utils import parse_args, create_logger, DEVICE, fix_random_seed
+from modeling.callbacks import CompositeCallback
+from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
+from modeling.dataloader.base import TorchDataloader
+from modeling.dataloader.batch_processors import BasicBatchProcessor
+from modeling.dataset.base import ScientificDataset
+from modeling.loss import SASRecLoss, CompositeLoss
+from modeling.metric.base import NDCGMetric, RecallMetric, CoverageMetric
+from modeling.models import SasRecModel
+from modeling.optimizer.base import BasicOptimizer, OPTIMIZERS
+from modeling.utils import parse_args, create_logger, fix_random_seed, tensorboards
+from modeling import utils
 
 logger = create_logger(name=__name__)
 seed_val = 42
@@ -23,24 +23,23 @@ seed_val = 42
 
 def create_ranking_metrics(dataset):
     return {
-        "ndcg@5": NDCGSemanticMetric(5),
-        "ndcg@10": NDCGSemanticMetric(10),
-        "ndcg@20": NDCGSemanticMetric(20),
-        "recall@5": RecallSemanticMetric(5),
-        "recall@10": RecallSemanticMetric(10),
-        "recall@20": RecallSemanticMetric(20),
-        "coverage@5": CoverageSemanticMetric(5, dataset.meta['num_items']),
-        "coverage@10": CoverageSemanticMetric(10, dataset.meta['num_items']),
-        "coverage@20": CoverageSemanticMetric(20, dataset.meta['num_items'])
+        "ndcg@5": NDCGMetric(5),
+        "ndcg@10": NDCGMetric(10),
+        "ndcg@20": NDCGMetric(20),
+        "recall@5": RecallMetric(5),
+        "recall@10": RecallMetric(10),
+        "recall@20": RecallMetric(20),
+        "coverage@5": CoverageMetric(5, dataset.meta['num_items']),
+        "coverage@10": CoverageMetric(10, dataset.meta['num_items']),
+        "coverage@20": CoverageMetric(20, dataset.meta['num_items'])
     }
 
 
-def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None, step_cnt=None, best_metric=None):
+def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None, step_cnt=None, best_metric=None,
+          epochs_threshold=None):
     step_num = 0
     epoch_num = 0
     current_metric = 0
-
-    epochs_threshold = 40
 
     best_epoch = 0
     best_checkpoint = None
@@ -59,7 +58,7 @@ def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None,
             model.train()
 
             for key, values in batch_.items():
-                batch_[key] = batch_[key].to(DEVICE)
+                batch_[key] = batch_[key].to(utils.DEVICE)
 
             batch_.update(model(batch_))
             loss = loss_function(batch_)
@@ -87,47 +86,47 @@ def main():
     fix_random_seed(seed_val)
     config = parse_args()
 
-    utils.tensorboards.GLOBAL_TENSORBOARD_WRITER = \
-        utils.tensorboards.TensorboardWriter(config['experiment_name'])
+    utils.GLOBAL_TENSORBOARD_WRITER = tensorboards.TensorboardWriter(config['experiment_name'])
 
+    print("BABUS", utils.GLOBAL_TENSORBOARD_WRITER)
     logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
-    logger.debug('Current DEVICE: {}'.format(DEVICE))
+    logger.debug('Current DEVICE: {}'.format(utils.DEVICE))
 
-    dataset = LetterFullDataset.create_from_config(config['dataset'])
+    dataset = ScientificDataset.create_from_config(config['dataset'])
 
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
     train_dataloader = TorchDataloader(
         dataloader=DataLoader(
             dataset=train_sampler,
-            batch_size=config['dataloader']['train']["batch_size"],
+            batch_size=config["dataloader_batch_size"]["train"],
             drop_last=True,
             shuffle=True,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['train']["batch_processor"])
+            collate_fn=BasicBatchProcessor()
         )
     )
 
     validation_dataloader = TorchDataloader(
         dataloader=DataLoader(
             dataset=validation_sampler,
-            batch_size=config['dataloader']['validation']["batch_size"],
+            batch_size=config["dataloader_batch_size"]["validation"],
             drop_last=False,
             shuffle=False,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
+            collate_fn=BasicBatchProcessor()
         )
     )
 
     eval_dataloader = TorchDataloader(
         dataloader=DataLoader(
             dataset=test_sampler,
-            batch_size=config['dataloader']['validation']["batch_size"],
+            batch_size=256,
             drop_last=False,
             shuffle=False,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
+            collate_fn=BasicBatchProcessor()
         )
     )
 
-    model = TigerModelT5.create_from_config(config['model'], **dataset.meta).to(DEVICE)
+    model = SasRecModel.create_from_config(config['model'], **dataset.meta).to(utils.DEVICE)
 
     if 'checkpoint' in config:
         checkpoint_path = os.path.join('../checkpoints', f'{config["checkpoint"]}.pth')
@@ -141,9 +140,10 @@ def main():
 
     loss_function = CompositeLoss(
         losses=[
-            IdentityMapLoss(
-                predictions_prefix="loss",
-                output_prefix="loss"
+            SASRecLoss(
+                positive_prefix="positive_scores",
+                negative_prefix="negative_scores",
+                output_prefix="downstream_loss"
             )
         ],
         weights=[1.0],
@@ -151,13 +151,12 @@ def main():
     )
 
     optimizer_cfg = copy.deepcopy(config['optimizer'])
-    _optimizer = OPTIMIZERS[optimizer_cfg.pop('type')](
-        model.parameters(),
-        **optimizer_cfg
-    )
     optimizer = BasicOptimizer(
         model=model,
-        optimizer=_optimizer,
+        optimizer=OPTIMIZERS[optimizer_cfg.pop('type')](
+            model.parameters(),
+            **optimizer_cfg
+        ),
         scheduler=None,
         clip_grad_threshold=config.get('clip_grad_threshold', None)
     )
@@ -224,7 +223,8 @@ def main():
         callback=callback,
         epoch_cnt=config.get('train_epochs_num'),
         step_cnt=config.get('train_steps_num'),
-        best_metric=config.get('best_metric')
+        best_metric=config.get('best_metric'),
+        epochs_threshold=config.get('early_stopping_threshold', 40)
     )
 
     logger.debug('Saving model...')

@@ -1,1 +1,1 @@
-from .tensorboard_writers import TensorboardWriter, GLOBAL_TENSORBOARD_WRITER, LOGS_DIR
+from .tensorboard_writers import TensorboardWriter, LOGS_DIR, GLOBAL_TENSORBOARD_WRITER

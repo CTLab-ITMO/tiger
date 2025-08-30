@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class TorchDataloader(config_name='torch'):
+class TorchDataloader:
 
     def __init__(self, dataloader):
         self._dataloader = dataloader

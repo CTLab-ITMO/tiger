@@ -60,7 +60,7 @@ def create_samplers(config, train_dataset, validation_dataset, test_dataset, num
         raise NotImplementedError
 
 
-class ScientificDataset(BaseDataset, config_name='sequence'):
+class ScientificDataset(BaseDataset):
 
     def __init__(
             self,
@@ -171,7 +171,7 @@ class ScientificDataset(BaseDataset, config_name='sequence'):
         }
 
 
-class ScientificFullDataset(ScientificDataset, config_name="scientific_full"):
+class ScientificFullDataset(ScientificDataset):
     def __init__(
             self,
             train_sampler,
@@ -280,7 +280,7 @@ class ScientificFullDataset(ScientificDataset, config_name="scientific_full"):
         )
 
 
-class LetterDataset(ScientificDataset, config_name="letter"):
+class LetterDataset(ScientificDataset):
     @classmethod
     def create_from_config(cls, config):
         user_interactions_path = os.path.join(config["letter_inter_json"])
@@ -311,7 +311,7 @@ class LetterDataset(ScientificDataset, config_name="letter"):
         )
 
 
-class LetterFullDataset(ScientificFullDataset, config_name="letter_full"):
+class LetterFullDataset(ScientificFullDataset):
     @classmethod
     def create_from_config(cls, config):
         user_interactions_path = os.path.join(config["letter_inter_json"])

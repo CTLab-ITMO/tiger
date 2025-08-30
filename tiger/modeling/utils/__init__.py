@@ -6,6 +6,7 @@ import random
 import numpy as np
 import torch
 
+from .tensorboards import GLOBAL_TENSORBOARD_WRITER, LOGS_DIR
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 

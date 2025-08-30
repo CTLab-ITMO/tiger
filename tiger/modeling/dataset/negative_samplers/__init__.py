@@ -1,7 +1,6 @@
-from .base import BaseNegativeSampler, PopularNegativeSampler, RandomNegativeSampler
+from .base import BaseNegativeSampler, RandomNegativeSampler
 
 __all__ = [
     'BaseNegativeSampler',
-    'PopularNegativeSampler',
     'RandomNegativeSampler'
 ]

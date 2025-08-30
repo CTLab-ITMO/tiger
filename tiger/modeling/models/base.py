@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from ..utils import DEVICE, create_masked_tensor, get_activation_function
+from ..utils import create_masked_tensor, get_activation_function, DEVICE
 
 
 class TorchModel(nn.Module):
@@ -134,7 +134,8 @@ class SequentialTorchModel(TorchModel):
             cls_token_tensor = self._cls_token.unsqueeze(0).unsqueeze(0)
             cls_token_expanded = torch.tile(cls_token_tensor, (batch_size, 1, 1))
             embeddings = torch.cat((cls_token_expanded, embeddings), dim=1)
-            mask = torch.cat((torch.ones((batch_size, 1), dtype=torch.bool, device=DEVICE), mask), dim=1)
+            mask = torch.cat((torch.ones((batch_size, 1), dtype=torch.bool, device=DEVICE), mask),
+                             dim=1)
 
         if self._is_causal:
             causal_mask = torch.tril(torch.ones(seq_len, seq_len)).bool().to(DEVICE)  # (seq_len, seq_len)

@@ -3,9 +3,10 @@ from pathlib import Path
 
 import numpy as np
 import torch
+
+from .. import utils
 from ..metric import BaseMetric, StatefullMetric
 from ..utils import create_logger, DEVICE
-from ..utils.tensorboards import GLOBAL_TENSORBOARD_WRITER
 
 logger = create_logger(name=__name__)
 
@@ -30,7 +31,7 @@ class BaseCallback:
         raise NotImplementedError
 
 
-class MetricCallback(BaseCallback, config_name='metric'):
+class MetricCallback(BaseCallback):
 
     def __init__(
             self,
@@ -74,22 +75,21 @@ class MetricCallback(BaseCallback, config_name='metric'):
                     ground_truth=inputs[self._model.schema['ground_truth_prefix']],
                     predictions=inputs[self._model.schema['predictions_prefix']]
                 )
-
-                GLOBAL_TENSORBOARD_WRITER.add_scalar(
+                utils.GLOBAL_TENSORBOARD_WRITER.add_scalar(
                     'train/{}'.format(metric_name),
                     metric_value,
                     step_num
                 )
-
-            GLOBAL_TENSORBOARD_WRITER.add_scalar(
+            print("BBB")
+            utils.GLOBAL_TENSORBOARD_WRITER.add_scalar(
                 'train/{}'.format(self._loss_prefix),
                 inputs[self._loss_prefix],
                 step_num
             )
-            GLOBAL_TENSORBOARD_WRITER.flush()
+            utils.GLOBAL_TENSORBOARD_WRITER.flush()
 
 
-class CheckpointCallback(BaseCallback, config_name='checkpoint'):
+class CheckpointCallback(BaseCallback):
 
     def __init__(
             self,
@@ -227,12 +227,12 @@ class InferenceCallback(BaseCallback):
 
             for label, value in running_params.items():
                 inputs[f'{self._get_name()}/{label}'] = np.mean(value)
-                GLOBAL_TENSORBOARD_WRITER.add_scalar(
+                utils.GLOBAL_TENSORBOARD_WRITER.add_scalar(
                     f'{self._get_name()}/{label}',
                     np.mean(value),
                     step_num
                 )
-            GLOBAL_TENSORBOARD_WRITER.flush()
+            utils.GLOBAL_TENSORBOARD_WRITER.flush()
 
             logger.debug(f'Running {self._get_name()} on step {step_num} is done!')
 
@@ -243,7 +243,7 @@ class InferenceCallback(BaseCallback):
         raise NotImplementedError
 
 
-class ValidationCallback(InferenceCallback, config_name='validation'):
+class ValidationCallback(InferenceCallback):
 
     @classmethod
     def create_from_config(cls, config, **kwargs):
@@ -268,7 +268,7 @@ class ValidationCallback(InferenceCallback, config_name='validation'):
         return self._validation_dataloader
 
 
-class EvalCallback(InferenceCallback, config_name='eval'):
+class EvalCallback(InferenceCallback):
 
     @classmethod
     def create_from_config(cls, config, **kwargs):
@@ -293,7 +293,7 @@ class EvalCallback(InferenceCallback, config_name='eval'):
         return self._eval_dataloader
 
 
-class CompositeCallback(BaseCallback, config_name='composite'):
+class CompositeCallback(BaseCallback):
     def __init__(
             self,
             model,
