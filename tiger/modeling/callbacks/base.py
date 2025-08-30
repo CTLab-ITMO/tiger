@@ -80,7 +80,6 @@ class MetricCallback(BaseCallback):
                     metric_value,
                     step_num
                 )
-            print("BBB")
             utils.GLOBAL_TENSORBOARD_WRITER.add_scalar(
                 'train/{}'.format(self._loss_prefix),
                 inputs[self._loss_prefix],
@@ -267,6 +266,9 @@ class ValidationCallback(InferenceCallback):
     def _get_dataloader(self):
         return self._validation_dataloader
 
+    def _get_name(self):
+        return "validation"
+
 
 class EvalCallback(InferenceCallback):
 
@@ -291,6 +293,9 @@ class EvalCallback(InferenceCallback):
 
     def _get_dataloader(self):
         return self._eval_dataloader
+
+    def _get_name(self):
+        return "eval"
 
 
 class CompositeCallback(BaseCallback):

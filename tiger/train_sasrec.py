@@ -88,7 +88,6 @@ def main():
 
     utils.GLOBAL_TENSORBOARD_WRITER = tensorboards.TensorboardWriter(config['experiment_name'])
 
-    print("BABUS", utils.GLOBAL_TENSORBOARD_WRITER)
     logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
     logger.debug('Current DEVICE: {}'.format(utils.DEVICE))
 
