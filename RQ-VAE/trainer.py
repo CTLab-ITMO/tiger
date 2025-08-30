@@ -1,18 +1,16 @@
 import logging
-import json
+import os
+from time import time
+
 import numpy as np
 import torch
-import random
-from time import time
 from torch import optim
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-import torch.nn.functional as F
-from utils import ensure_dir,set_color,get_local_time
-import os
-import wandb
 from datasets import EmbDataset
-from torch.utils.data import DataLoader
+from utils import ensure_dir, set_color, get_local_time
+
 
 class Trainer(object):
 
@@ -30,23 +28,22 @@ class Trainer(object):
         self.device = torch.device(self.device)
         self.ckpt_dir = args.ckpt_dir
         saved_model_dir = "{}".format(get_local_time())
-        self.ckpt_dir = os.path.join(self.ckpt_dir,saved_model_dir)
+        self.ckpt_dir = os.path.join(self.ckpt_dir, saved_model_dir)
         ensure_dir(self.ckpt_dir)
-        self.labels = {"0":[],"1":[],"2":[], "3":[],"4":[], "5":[]}
+        self.labels = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": []}
         self.best_loss = np.inf
         self.best_collision_rate = np.inf
         self.best_loss_ckpt = "best_loss_model.pth"
         self.best_collision_ckpt = "best_collision_model.pth"
         self.optimizer = self._build_optimizer()
         self.model = self.model.to(self.device)
-        self.trained_loss = {"total":[],"rqvae":[],"recon":[],"cf":[]}
-        self.valid_collision_rate = {"val":[]}
-
+        self.trained_loss = {"total": [], "rqvae": [], "recon": [], "cf": []}
+        self.valid_collision_rate = {"val": []}
 
     def _build_optimizer(self):
 
         params = self.model.parameters()
-        learner =  self.learner
+        learner = self.learner
         learning_rate = self.lr
         weight_decay = self.weight_decay
 
@@ -80,43 +77,45 @@ class Trainer(object):
             )
             optimizer = optim.Adam(params, lr=learning_rate)
         return optimizer
+
     def _check_nan(self, loss):
         if torch.isnan(loss):
             raise ValueError("Training loss is nan")
 
     def constrained_km(self, data, n_clusters=10):
-        from k_means_constrained import KMeansConstrained 
+        from k_means_constrained import KMeansConstrained
         # x = data.cpu().detach().numpy()
         # data = self.embedding.weight.cpu().detach().numpy()
         x = data
         size_min = min(len(data) // (n_clusters * 2), 10)
-        clf = KMeansConstrained(n_clusters=n_clusters, size_min=size_min, size_max=n_clusters * 6, max_iter=10, n_init=10,
+        clf = KMeansConstrained(n_clusters=n_clusters, size_min=size_min, size_max=n_clusters * 6, max_iter=10,
+                                n_init=10,
                                 n_jobs=10, verbose=False)
         clf.fit(x)
         t_centers = torch.from_numpy(clf.cluster_centers_)
         t_labels = torch.from_numpy(clf.labels_).tolist()
 
         return t_centers, t_labels
-    
+
     def vq_init(self):
         self.model.eval()
         original_data = EmbDataset(self.args.data_path)
-        init_loader = DataLoader(original_data,num_workers=self.args.num_workers,
-                             batch_size=len(original_data), shuffle=True,
-                             pin_memory=True)
+        init_loader = DataLoader(original_data, num_workers=self.args.num_workers,
+                                 batch_size=len(original_data), shuffle=True,
+                                 pin_memory=True)
         print(len(init_loader))
         iter_data = tqdm(
-                    init_loader,
-                    total=len(init_loader),
-                    ncols=100,
-                    desc=set_color(f"Initialization of vq","pink"),
-                    )
+            init_loader,
+            total=len(init_loader),
+            ncols=100,
+            desc=set_color(f"Initialization of vq", "pink"),
+        )
         # Train
         for batch_idx, data in enumerate(iter_data):
             data, emb_idx = data[0], data[1]
             data = data.to(self.device)
 
-            self.model.vq_initialization(data)    
+            self.model.vq_initialization(data)
 
     def _train_epoch(self, train_data, epoch_idx):
 
@@ -128,12 +127,12 @@ class Trainer(object):
         total_quant_loss = 0
         print(len(train_data))
         iter_data = tqdm(
-                    train_data,
-                    total=len(train_data),
-                    ncols=100,
-                    desc=set_color(f"Train {epoch_idx}","pink"),
-                    )
-        embs  = [layer.embedding.weight.cpu().detach().numpy() for layer in self.model.rq.vq_layers]
+            train_data,
+            total=len(train_data),
+            ncols=100,
+            desc=set_color(f"Train {epoch_idx}", "pink"),
+        )
+        embs = [layer.embedding.weight.cpu().detach().numpy() for layer in self.model.rq.vq_layers]
 
         for idx, emb in enumerate(embs):
             centers, labels = self.constrained_km(emb)
@@ -162,16 +161,16 @@ class Trainer(object):
 
         self.model.eval()
 
-        iter_data =tqdm(
-                valid_data,
-                total=len(valid_data),
-                ncols=100,
-                desc=set_color(f"Evaluate   ", "pink"),
-            )
+        iter_data = tqdm(
+            valid_data,
+            total=len(valid_data),
+            ncols=100,
+            desc=set_color(f"Evaluate   ", "pink"),
+        )
         indices_set = set()
 
         num_sample = 0
-        embs  = [layer.embedding.weight.cpu().detach().numpy() for layer in self.model.rq.vq_layers]
+        embs = [layer.embedding.weight.cpu().detach().numpy() for layer in self.model.rq.vq_layers]
         for idx, emb in enumerate(embs):
             centers, labels = self.constrained_km(emb)
             self.labels[str(idx)] = labels
@@ -181,21 +180,20 @@ class Trainer(object):
             num_sample += len(data)
             data = data.to(self.device)
             indices = self.model.get_indices(data, self.labels)
-            indices = indices.view(-1,indices.shape[-1]).cpu().numpy()
+            indices = indices.view(-1, indices.shape[-1]).cpu().numpy()
             for index in indices:
                 code = "-".join([str(int(_)) for _ in index])
                 indices_set.add(code)
 
-        collision_rate = (num_sample - len(indices_set))/num_sample
+        collision_rate = (num_sample - len(indices_set)) / num_sample
         # balance_score = self.balance_overall(tokens_appearance)
         # wandb.log({"collision_rate": collision_rate, "balance_score": 0})
-
 
         return collision_rate
 
     def _save_checkpoint(self, epoch, collision_rate=1, ckpt_file=None):
 
-        ckpt_path = os.path.join(self.ckpt_dir,ckpt_file) if ckpt_file \
+        ckpt_path = os.path.join(self.ckpt_dir, ckpt_file) if ckpt_file \
             else os.path.join(self.ckpt_dir, 'epoch_%d_collision_%.4f_model.pth' % (epoch, collision_rate))
         state = {
             "args": self.args,
@@ -213,15 +211,15 @@ class Trainer(object):
 
     def _generate_train_loss_output(self, epoch_idx, s_time, e_time, loss, recon_loss, cf_loss):
         train_loss_output = (
-            set_color("epoch %d training", "green")
-            + " ["
-            + set_color("time", "blue")
-            + ": %.2fs, "
-        ) % (epoch_idx, e_time - s_time)
+                                    set_color("epoch %d training", "green")
+                                    + " ["
+                                    + set_color("time", "blue")
+                                    + ": %.2fs, "
+                            ) % (epoch_idx, e_time - s_time)
         train_loss_output += set_color("train loss", "blue") + ": %.4f" % loss
-        train_loss_output +=", "
+        train_loss_output += ", "
         train_loss_output += set_color("reconstruction loss", "blue") + ": %.4f" % recon_loss
-        train_loss_output +=", "
+        train_loss_output += ", "
         train_loss_output += set_color("cf loss", "blue") + ": %.4f" % cf_loss
         return train_loss_output + "]"
 
@@ -263,22 +261,17 @@ class Trainer(object):
 
                 valid_end_time = time()
                 valid_score_output = (
-                    set_color("epoch %d evaluating", "green")
-                    + " ["
-                    + set_color("time", "blue")
-                    + ": %.2fs, "
-                    + set_color("collision_rate", "blue")
-                    + ": %f]"
-                ) % (epoch_idx, valid_end_time - valid_start_time, collision_rate)
+                                             set_color("epoch %d evaluating", "green")
+                                             + " ["
+                                             + set_color("time", "blue")
+                                             + ": %.2fs, "
+                                             + set_color("collision_rate", "blue")
+                                             + ": %f]"
+                                     ) % (epoch_idx, valid_end_time - valid_start_time, collision_rate)
 
                 self.logger.info(valid_score_output)
 
-                if epoch_idx>2500:
+                if epoch_idx > 2500:
                     self._save_checkpoint(epoch_idx, collision_rate=collision_rate)
 
-
         return self.best_loss, self.best_collision_rate
-
-
-
-

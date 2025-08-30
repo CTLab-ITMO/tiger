@@ -1,11 +1,17 @@
-
+import argparse
 import datetime
+import json
+import logging
 import os
+import random
+
+import numpy as np
+import torch
 
 
 def ensure_dir(dir_path):
-
     os.makedirs(dir_path, exist_ok=True)
+
 
 def set_color(log, color, highlight=True):
     color_set = ["black", "red", "green", "yellow", "blue", "pink", "cyan", "white"]
@@ -21,6 +27,7 @@ def set_color(log, color, highlight=True):
     prev_log += str(index) + "m"
     return prev_log + log + "\033[0m"
 
+
 def get_local_time():
     r"""Get current time
 
@@ -33,4 +40,40 @@ def get_local_time():
     return cur
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="RQ-VAE Training")
+    parser.add_argument('--params', type=str, required=True,
+                        help='Path to configuration file')
+    args = parser.parse_args()
 
+    with open(args.params, 'r') as f:
+        config = json.load(f)
+
+    return config
+
+
+def create_logger(name):
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+    return logger
+
+
+def fix_random_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+def create_checkpoint_dir(ckpt_dir):
+    os.makedirs(ckpt_dir, exist_ok=True)
+    return ckpt_dir

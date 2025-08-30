@@ -1,0 +1,44 @@
+{
+  "experiment_name": "rqvae_instruments_32d",
+  "device": "cuda:4",
+  "seed": 42,
+  "dataset": {
+    "type": "embedding",
+    "data_path": "../data"
+  },
+  "model": {
+    "type": "rqvae",
+    "num_emb_list": [256, 256, 256, 256],
+    "e_dim": 32,
+    "layers": [2048, 1024, 512, 256, 128, 64],
+    "dropout_prob": 0.0,
+    "bn": false,
+    "loss_type": "mse",
+    "quant_loss_weight": 1.0,
+    "kmeans_init": true,
+    "kmeans_iters": 100,
+    "sk_epsilons": [0.0, 0.0, 0.0, 0.003],
+    "sk_iters": 50,
+    "alpha": 0.1,
+    "beta": 0.1,
+    "n_clusters": 10,
+    "sample_strategy": "all",
+    "cf_emb_path": "./RQ-VAE/ckpt/Instruments-32d-sasrec.pt"
+  },
+  "training": {
+    "epochs": 20000,
+    "eval_step": 2000,
+    "ckpt_dir": "../checkpoints"
+  },
+  "dataloader": {
+    "batch_size": 1024,
+    "num_workers": 4,
+    "shuffle": true,
+    "pin_memory": true
+  },
+  "optimizer": {
+    "type": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 0.0001
+  }
+}

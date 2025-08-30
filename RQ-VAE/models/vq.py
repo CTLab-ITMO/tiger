@@ -1,15 +1,16 @@
+import random
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .layers import kmeans, sinkhorn_algorithm
-import random
-import wandb
+
+from .layers import sinkhorn_algorithm
 
 
 class VectorQuantizer(nn.Module):
 
-    def __init__(self, n_e, e_dim, mu = 0.25,
-                 beta = 1, kmeans_init = False, kmeans_iters = 10,
+    def __init__(self, n_e, e_dim, mu=0.25,
+                 beta=1, kmeans_init=False, kmeans_iters=10,
                  sk_epsilon=0.01, sk_iters=100):
         super().__init__()
         self.n_e = n_e
@@ -50,21 +51,21 @@ class VectorQuantizer(nn.Module):
         centers, _ = self.constrained_km(data, 256)
         self.embedding.weight.data.copy_(centers)
         self.initted = True
-    
+
     def constrained_km(self, data, n_clusters=10):
-        from k_means_constrained import KMeansConstrained 
+        from k_means_constrained import KMeansConstrained
         x = data.cpu().detach().numpy()
 
-        size_min = min(len(data) // (n_clusters * 2), 50) # 50 for the very first time, 10 the latter
+        size_min = min(len(data) // (n_clusters * 2), 50)  # 50 for the very first time, 10 the latter
 
         clf = KMeansConstrained(n_clusters=n_clusters, size_min=size_min, size_max=size_min * 4, max_iter=10, n_init=10,
-                                n_jobs=10, verbose=False) # 'size_min * 4' for the very first time, 'n_clusters * 4' for the latter
+                                n_jobs=10,
+                                verbose=False)  # 'size_min * 4' for the very first time, 'n_clusters * 4' for the latter
         clf.fit(x)
         t_centers = torch.from_numpy(clf.cluster_centers_)
         t_labels = torch.from_numpy(clf.labels_).tolist()
         value_counts = {}
         return t_centers, t_labels
-
 
     def diversity_loss(self, x_q, indices, indices_cluster, indices_list):
         emb = self.embedding.weight
@@ -97,7 +98,7 @@ class VectorQuantizer(nn.Module):
     def diversity_loss_main_entry(self, x, x_q, indices, labels):
 
         indices_cluster = [labels[idx.item()] for idx in indices]
-        target_numbers = list(range(10)) 
+        target_numbers = list(range(10))
         indices_list = {}
         for target_number in target_numbers:
             indices_list[target_number] = [index for index, num in enumerate(labels) if num == target_number]
@@ -105,8 +106,7 @@ class VectorQuantizer(nn.Module):
         diversity_loss = self.diversity_loss(x_q, indices, indices_cluster, indices_list)
 
         return diversity_loss
-                    
-    
+
     @staticmethod
     def center_distance_for_constraint(distances):
         # distances: B, K
@@ -118,34 +118,33 @@ class VectorQuantizer(nn.Module):
         assert amplitude > 0
         centered_distances = (distances - middle) / amplitude
         return centered_distances
-    
+
     def vq_init(self, x, use_sk=True):
         latent = x.view(-1, self.e_dim)
 
         if not self.initted:
             self.init_emb(latent)
 
-        _distance_flag = 'distance'    
-        
-        if _distance_flag == 'distance':
-            d = torch.sum(latent**2, dim=1, keepdim=True) + \
-                torch.sum(self.embedding.weight**2, dim=1, keepdim=True).t()- \
-                2 * torch.matmul(latent, self.embedding.weight.t())
-        else:    
-        # Calculate Cosine Similarity 
-            d = latent@self.embedding.weight.t()
+        _distance_flag = 'distance'
 
+        if _distance_flag == 'distance':
+            d = torch.sum(latent ** 2, dim=1, keepdim=True) + \
+                torch.sum(self.embedding.weight ** 2, dim=1, keepdim=True).t() - \
+                2 * torch.matmul(latent, self.embedding.weight.t())
+        else:
+            # Calculate Cosine Similarity
+            d = latent @ self.embedding.weight.t()
 
         if not use_sk or self.sk_epsilon <= 0:
             if _distance_flag == 'distance':
                 indices = torch.argmin(d, dim=-1)
-            else:    
+            else:
                 indices = torch.argmax(d, dim=-1)
         else:
             d = self.center_distance_for_constraint(d)
             d = d.double()
 
-            Q = sinkhorn_algorithm(d,self.sk_epsilon,self.sk_iters)
+            Q = sinkhorn_algorithm(d, self.sk_epsilon, self.sk_iters)
             if torch.isnan(Q).any() or torch.isinf(Q).any():
                 print(f"Sinkhorn Algorithm returns nan/inf values.")
             indices = torch.argmax(Q, dim=-1)
@@ -153,8 +152,8 @@ class VectorQuantizer(nn.Module):
         x_q = self.embedding(indices).view(x.shape)
 
         return x_q
-    
-    def forward(self,  x, label, idx, use_sk=True):
+
+    def forward(self, x, label, idx, use_sk=True):
         # Flatten input
         latent = x.view(-1, self.e_dim)
 
@@ -162,30 +161,30 @@ class VectorQuantizer(nn.Module):
             self.init_emb(latent)
 
         # Calculate the L2 Norm between latent and Embedded weights
-        _distance_flag = 'distance'    
-        
+        _distance_flag = 'distance'
+
         if _distance_flag == 'distance':
-            d = torch.sum(latent**2, dim=1, keepdim=True) + \
-                torch.sum(self.embedding.weight**2, dim=1, keepdim=True).t()- \
+            d = torch.sum(latent ** 2, dim=1, keepdim=True) + \
+                torch.sum(self.embedding.weight ** 2, dim=1, keepdim=True).t() - \
                 2 * torch.matmul(latent, self.embedding.weight.t())
-        else:    
-        # Calculate Cosine Similarity 
-            d = latent@self.embedding.weight.t()
+        else:
+            # Calculate Cosine Similarity
+            d = latent @ self.embedding.weight.t()
         if not use_sk or self.sk_epsilon <= 0:
             if _distance_flag == 'distance':
                 if idx != -1:
                     indices = torch.argmin(d, dim=-1)
                 else:
                     temp = 1.0
-                    prob_dist = F.softmax(-d/temp, dim=1)  
+                    prob_dist = F.softmax(-d / temp, dim=1)
                     indices = torch.multinomial(prob_dist, 1).squeeze()
-            else:    
+            else:
                 indices = torch.argmax(d, dim=-1)
         else:
             d = self.center_distance_for_constraint(d)
             d = d.double()
 
-            Q = sinkhorn_algorithm(d,self.sk_epsilon,self.sk_iters)
+            Q = sinkhorn_algorithm(d, self.sk_epsilon, self.sk_iters)
             # print(Q.sum(0)[:10])
             if torch.isnan(Q).any() or torch.isinf(Q).any():
                 print(f"Sinkhorn Algorithm returns nan/inf values.")
@@ -205,12 +204,9 @@ class VectorQuantizer(nn.Module):
 
         loss = codebook_loss + self.mu * commitment_loss + self.beta * diversity_loss
 
-
         # preserve gradients
         x_q = x + (x_q - x).detach()
 
         indices = indices.view(x.shape[:-1])
 
         return x_q, loss, indices
-
-

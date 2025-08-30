@@ -1,0 +1,42 @@
+{
+  "experiment_name": "rqvae_4000_64_custom",
+  "dataset": {
+    "type": "embedding",
+    "data_path": "../data/Beauty/final_data_reduced.pkl"
+  },
+  "model": {
+    "type": "rqvae",
+    "num_emb_list": [256, 256, 256, 256],
+    "e_dim": 64,
+    "layers": [4096, 2048, 1024, 512, 256, 128, 64],
+    "dropout_prob": 0.1,
+    "bn": false,
+    "loss_type": "mse",
+    "quant_loss_weight": 1.0,
+    "kmeans_init": true,
+    "kmeans_iters": 150,
+    "sk_epsilons": [0.0, 0.0, 0.0, 0.005],
+    "sk_iters": 75,
+    "alpha": 0.035,
+    "beta": 0.01,
+    "n_clusters": 30,
+    "sample_strategy": "all",
+    "cf_emb_path": "../data/Beauty/4000_64_sasrec_item_embeds.pt"
+  },
+  "training": {
+    "epochs": 25000,
+    "eval_step": 3000,
+    "ckpt_dir": "../checkpoints"
+  },
+  "dataloader": {
+    "batch_size": 1024,
+    "num_workers": 4,
+    "shuffle": true,
+    "pin_memory": true
+  },
+  "optimizer": {
+    "type": "AdamW",
+    "lr": 0.0003,
+    "weight_decay": 0.001
+  }
+}
