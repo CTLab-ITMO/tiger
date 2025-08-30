@@ -1,14 +1,10 @@
 import torch
 import torch.nn as nn
 
-from utils import DEVICE, MetaParent, create_masked_tensor, get_activation_function
+from ..utils import DEVICE, create_masked_tensor, get_activation_function
 
 
-class BaseModel(metaclass=MetaParent):
-    pass
-
-
-class TorchModel(nn.Module, BaseModel):
+class TorchModel(nn.Module):
 
     @torch.no_grad()
     def _init_weights(self, initializer_range):

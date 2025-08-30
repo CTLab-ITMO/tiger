@@ -1,17 +1,16 @@
-from metric import BaseMetric, StatefullMetric
-
-import utils
-from utils import MetaParent, create_logger
+import os
+from pathlib import Path
 
 import numpy as np
-import os
 import torch
-from pathlib import Path
+from ..metric import BaseMetric, StatefullMetric
+from ..utils import create_logger, DEVICE
+from ..utils.tensorboards import GLOBAL_TENSORBOARD_WRITER
 
 logger = create_logger(name=__name__)
 
 
-class BaseCallback(metaclass=MetaParent):
+class BaseCallback:
 
     def __init__(
             self,
@@ -76,18 +75,18 @@ class MetricCallback(BaseCallback, config_name='metric'):
                     predictions=inputs[self._model.schema['predictions_prefix']]
                 )
 
-                utils.tensorboards.GLOBAL_TENSORBOARD_WRITER.add_scalar(
+                GLOBAL_TENSORBOARD_WRITER.add_scalar(
                     'train/{}'.format(metric_name),
                     metric_value,
                     step_num
                 )
 
-            utils.tensorboards.GLOBAL_TENSORBOARD_WRITER.add_scalar(
+            GLOBAL_TENSORBOARD_WRITER.add_scalar(
                 'train/{}'.format(self._loss_prefix),
                 inputs[self._loss_prefix],
                 step_num
             )
-            utils.tensorboards.GLOBAL_TENSORBOARD_WRITER.flush()
+            GLOBAL_TENSORBOARD_WRITER.flush()
 
 
 class CheckpointCallback(BaseCallback, config_name='checkpoint'):
@@ -205,7 +204,7 @@ class InferenceCallback(BaseCallback):
                 for batch in self._get_dataloader():
 
                     for key, value in batch.items():
-                        batch[key] = value.to(utils.DEVICE)
+                        batch[key] = value.to(DEVICE)
 
                     batch.update(self._model(batch))
 
@@ -221,22 +220,22 @@ class InferenceCallback(BaseCallback):
 
                     if self._loss_prefix is not None:
                         running_params[self._loss_prefix] += batch[self._loss_prefix].item()
-            
+
             for metric_name, metric_function in self._metrics.items():
                 if isinstance(metric_function, StatefullMetric):
                     running_params[metric_name] = metric_function.reduce(running_params[metric_name])
 
             for label, value in running_params.items():
                 inputs[f'{self._get_name()}/{label}'] = np.mean(value)
-                utils.tensorboards.GLOBAL_TENSORBOARD_WRITER.add_scalar(
+                GLOBAL_TENSORBOARD_WRITER.add_scalar(
                     f'{self._get_name()}/{label}',
                     np.mean(value),
                     step_num
                 )
-            utils.tensorboards.GLOBAL_TENSORBOARD_WRITER.flush()
+            GLOBAL_TENSORBOARD_WRITER.flush()
 
             logger.debug(f'Running {self._get_name()} on step {step_num} is done!')
-        
+
     def _get_name(self):
         return self.config_name
 

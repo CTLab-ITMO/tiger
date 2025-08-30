@@ -1,40 +1,18 @@
-import copy
-
 import torch
 import torch.nn as nn
 
-from utils import MetaParent
 
-
-class BaseLoss(metaclass=MetaParent):
+class TorchLoss(nn.Module):
     pass
 
 
-class TorchLoss(BaseLoss, nn.Module):
-    pass
-
-
-class CompositeLoss(TorchLoss, config_name='composite'):
+class CompositeLoss(TorchLoss):
 
     def __init__(self, losses, weights=None, output_prefix=None):
         super().__init__()
         self._losses = losses
         self._weights = weights or [1.0] * len(losses)
         self._output_prefix = output_prefix
-
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        losses = []
-        weights = []
-
-        for loss_cfg in copy.deepcopy(config)['losses']:
-            weight = loss_cfg.pop('weight') if 'weight' in loss_cfg else 1.0
-            loss_function = BaseLoss.create_from_config(loss_cfg)
-
-            weights.append(weight)
-            losses.append(loss_function)
-
-        return cls(losses=losses, weights=weights, output_prefix=config.get('output_prefix'))
 
     def forward(self, inputs):
         total_loss = 0.0
@@ -47,7 +25,7 @@ class CompositeLoss(TorchLoss, config_name='composite'):
         return total_loss
 
 
-class SASRecLoss(TorchLoss, config_name='sasrec'):
+class SASRecLoss(TorchLoss):
 
     def __init__(
             self,
@@ -77,7 +55,7 @@ class SASRecLoss(TorchLoss, config_name='sasrec'):
         return loss
 
 
-class IdentityMapLoss(TorchLoss, config_name='identity_map'):
+class IdentityMapLoss(TorchLoss):
 
     def __init__(self, predictions_prefix, output_prefix=None):
         super().__init__()

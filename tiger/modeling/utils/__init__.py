@@ -1,17 +1,12 @@
-from utils.registry import MetaParent
-from utils.grid_search import Params
-import utils.tensorboards
-
-import json
-import random
-import logging
 import argparse
-import numpy as np
+import json
+import logging
+import random
 
+import numpy as np
 import torch
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-# DEVICE = torch.device('cpu')
 
 
 def parse_args():
@@ -21,7 +16,7 @@ def parse_args():
 
     with open(args.params) as f:
         params = json.load(f)
-    
+
     return params
 
 

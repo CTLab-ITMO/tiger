@@ -1,6 +1,5 @@
 import torch
-
-from models import SequentialTorchModel
+from ..models import SequentialTorchModel
 
 
 class SasRecModel(SequentialTorchModel, config_name='sasrec'):

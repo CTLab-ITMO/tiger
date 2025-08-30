@@ -3,8 +3,8 @@ from transformers import T5ForConditionalGeneration, T5Config
 from typing import Dict, Optional
 from dataclasses import dataclass
 
-from models import TorchModel
-from utils import create_masked_tensor
+from ..models import TorchModel
+from ..utils import create_masked_tensor
 
 
 @dataclass

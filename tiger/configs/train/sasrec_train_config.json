@@ -1,40 +1,22 @@
- {
-  "experiment_name": "sasrec_beauty_letter_all_negatives",
+{
+  "experiment_name": "4096_2000_my_sasrec_beauty_letter_64",
   "best_metric": "validation/ndcg@20",
+  "train_epochs_num": 2000,
+  "early_stopping_threshold": 40,
   "dataset": {
-    "type": "letter",
     "path_to_data_dir": "../data",
-    "name": "Beauty_letter",
+    "name": "our_beauty",
     "max_sequence_length": 50,
     "samplers": {
       "type": "next_item_prediction",
-      "negative_sampler_type": "random",
-      "num_negatives_train": 0
-    },
-    "letter_inter_json": "../data/Beauty_letter/inter.json"
-  },
-  "dataloader": {
-    "train": {
-      "type": "torch",
-      "batch_size": 256,
-      "batch_processor": {
-        "type": "basic"
-      },
-      "drop_last": true,
-      "shuffle": true
-    },
-    "validation": {
-      "type": "torch",
-      "batch_size": 256,
-      "batch_processor": {
-        "type": "basic"
-      },
-      "drop_last": false,
-      "shuffle": false
+      "num_negatives_val": 100
     }
   },
+  "dataloader_batch_size": {
+    "train": 256,
+    "validation": 256
+  },
   "model": {
-    "type": "sasrec",
     "sequence_prefix": "item",
     "positive_prefix": "positive",
     "candidate_prefix": "candidates",
@@ -48,121 +30,10 @@
     "initializer_range": 0.02
   },
   "optimizer": {
-    "type": "basic",
     "optimizer": {
       "type": "adam",
       "lr": 0.001
     },
     "clip_grad_threshold": 1.0
-  },
-  "loss": {
-    "type": "composite",
-    "losses": [
-      {
-        "type": "sasrec",
-        "positive_prefix": "positive_scores",
-        "negative_prefix": "negative_scores",
-        "output_prefix": "downstream_loss"
-      }
-    ],
-    "output_prefix": "loss"
-  },
-  "callback": {
-    "type": "composite",
-    "callbacks": [
-      {
-        "type": "metric",
-        "on_step": 1,
-        "loss_prefix": "loss"
-      },
-      {
-        "type": "validation",
-        "on_step": 64,
-        "pred_prefix": "predictions",
-        "labels_prefix": "labels",
-        "metrics": {
-          "ndcg@5": {
-            "type": "ndcg",
-            "k": 5
-          },
-          "ndcg@10": {
-            "type": "ndcg",
-            "k": 10
-          },
-          "ndcg@20": {
-            "type": "ndcg",
-            "k": 20
-          },
-          "recall@5": {
-            "type": "recall",
-            "k": 5
-          },
-          "recall@10": {
-            "type": "recall",
-            "k": 10
-          },
-          "recall@20": {
-            "type": "recall",
-            "k": 20
-          },
-          "coverage@5": {
-            "type": "coverage",
-            "k": 5
-          },
-          "coverage@10": {
-            "type": "coverage",
-            "k": 10
-          },
-          "coverage@20": {
-            "type": "coverage",
-            "k": 20
-          }
-        }
-      },
-      {
-        "type": "eval",
-        "on_step": 256,
-        "pred_prefix": "predictions",
-        "labels_prefix": "labels",
-        "metrics": {
-          "ndcg@5": {
-            "type": "ndcg",
-            "k": 5
-          },
-          "ndcg@10": {
-            "type": "ndcg",
-            "k": 10
-          },
-          "ndcg@20": {
-            "type": "ndcg",
-            "k": 20
-          },
-          "recall@5": {
-            "type": "recall",
-            "k": 5
-          },
-          "recall@10": {
-            "type": "recall",
-            "k": 10
-          },
-          "recall@20": {
-            "type": "recall",
-            "k": 20
-          },
-          "coverage@5": {
-            "type": "coverage",
-            "k": 5
-          },
-          "coverage@10": {
-            "type": "coverage",
-            "k": 10
-          },
-          "coverage@20": {
-            "type": "coverage",
-            "k": 20
-          }
-        }
-      }
-    ]
   }
 }

@@ -1,7 +1,3 @@
-import copy
-
-from utils import MetaParent
-
 import torch
 
 OPTIMIZERS = {
@@ -15,10 +11,8 @@ SCHEDULERS = {
     'cyclic': torch.optim.lr_scheduler.CyclicLR
 }
 
-
-class BaseOptimizer(metaclass=MetaParent):
+class BaseOptimizer:
     pass
-
 
 class BasicOptimizer(BaseOptimizer, config_name='basic'):
     def __init__(self, model, optimizer, scheduler=None, clip_grad_threshold=None):
@@ -26,30 +20,6 @@ class BasicOptimizer(BaseOptimizer, config_name='basic'):
         self._optimizer = optimizer
         self._scheduler = scheduler
         self._clip_grad_threshold = clip_grad_threshold
-
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        optimizer_cfg = copy.deepcopy(config['optimizer'])
-        optimizer = OPTIMIZERS[optimizer_cfg.pop('type')](
-            kwargs['model'].parameters(),
-            **optimizer_cfg
-        )
-
-        if 'scheduler' in config:
-            scheduler_cfg = copy.deepcopy(config['scheduler'])
-            scheduler = SCHEDULERS[scheduler_cfg.pop('type')](
-                optimizer,
-                **scheduler_cfg
-            )
-        else:
-            scheduler = None
-
-        return cls(
-            model=kwargs['model'],
-            optimizer=optimizer,
-            scheduler=scheduler,
-            clip_grad_threshold=config.get('clip_grad_threshold', None)
-        )
 
     def step(self, loss):
         self._optimizer.zero_grad()

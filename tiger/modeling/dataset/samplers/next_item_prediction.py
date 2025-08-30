@@ -1,10 +1,11 @@
-from dataset.samplers.base import TrainSampler, EvalSampler
-from dataset.negative_samplers.base import BaseNegativeSampler
+
+from ...dataset.samplers.base import TrainSampler, EvalSampler
+from ...dataset.negative_samplers.base import RandomNegativeSampler
 
 import copy
 
 
-class NextItemPredictionTrainSampler(TrainSampler, config_name='next_item_prediction'):
+class NextItemPredictionTrainSampler(TrainSampler):
 
     def __init__(self, dataset, num_users, num_items, negative_sampler, num_negatives=0):
         super().__init__()
@@ -16,7 +17,7 @@ class NextItemPredictionTrainSampler(TrainSampler, config_name='next_item_predic
 
     @classmethod
     def create_from_config(cls, config, **kwargs):
-        negative_sampler = BaseNegativeSampler.create_from_config({'type': config['negative_sampler_type']}, **kwargs)
+        negative_sampler = RandomNegativeSampler(kwargs['dataset'], kwargs['num_users'], kwargs['num_items'])
 
         return cls(
             dataset=kwargs['dataset'],
@@ -63,7 +64,7 @@ class NextItemPredictionTrainSampler(TrainSampler, config_name='next_item_predic
             }
 
 
-class NextItemPredictionEvalSampler(EvalSampler, config_name='next_item_prediction'):
+class NextItemPredictionEvalSampler(EvalSampler):
 
     @classmethod
     def create_from_config(cls, config, **kwargs):

@@ -1,29 +1,31 @@
 import json
 import re
-import torch
-from utils import MetaParent
+
 import murmurhash
+import torch
 
 
-class BaseBatchProcessor(metaclass=MetaParent):
+class BaseBatchProcessor:
 
     def __call__(self, batch):
         raise NotImplementedError
 
 
-class IdentityBatchProcessor(BaseBatchProcessor, config_name='identity'):
+class IdentityBatchProcessor(BaseBatchProcessor):
 
     def __call__(self, batch):
         return torch.tensor(batch)
 
-class EmbedBatchProcessor(BaseBatchProcessor, config_name="embed"):
+
+class EmbedBatchProcessor(BaseBatchProcessor):
     def __call__(self, batch):
         ids = torch.tensor([entry["item.id"] for entry in batch])
         embeds = torch.stack([entry["item.embed"] for entry in batch])
 
         return {"ids": ids, "embeddings": embeds}
 
-class BasicBatchProcessor(BaseBatchProcessor, config_name='basic'):
+
+class BasicBatchProcessor(BaseBatchProcessor):
 
     def __call__(self, batch):
         processed_batch = {}
@@ -46,7 +48,7 @@ class BasicBatchProcessor(BaseBatchProcessor, config_name='basic'):
         return processed_batch
 
 
-class LetterBatchProcessor(BasicBatchProcessor, config_name='letter'):
+class LetterBatchProcessor(BasicBatchProcessor):
 
     def __init__(self, mapping: dict[int, list[int]], semantic_length: int):
         self._prefixes = ['item', 'labels', 'positive', 'negative']
@@ -57,7 +59,7 @@ class LetterBatchProcessor(BasicBatchProcessor, config_name='letter'):
         self._mapping_tensor = torch.zeros((len(mapping), semantic_length), dtype=torch.long)
         for item_id, semantic_ids in mapping.items():
             self._mapping_tensor[item_id] = torch.tensor(semantic_ids, dtype=torch.long)
-        
+
     @classmethod
     def create_from_config(cls, config, **kwargs):
         mapping_path = config["letter_index_json"]
@@ -82,15 +84,15 @@ class LetterBatchProcessor(BasicBatchProcessor, config_name='letter'):
             if f"{prefix}.ids" in processed_batch:
                 ids = processed_batch[f"{prefix}.ids"]
                 lengths = processed_batch[f"{prefix}.length"]
-                
+
                 processed_batch[f"semantic_{prefix}.ids"] = self._mapping_tensor[ids].flatten()
-                processed_batch[f"semantic_{prefix}.length"] = lengths * self._semantic_length 
+                processed_batch[f"semantic_{prefix}.length"] = lengths * self._semantic_length
 
         processed_batch['hashed_user.ids'] = torch.tensor(
-            list(map(lambda x: murmurhash.hash(str(x)) % 2000, processed_batch['user.ids'].tolist())), 
+            list(map(lambda x: murmurhash.hash(str(x)) % 2000, processed_batch['user.ids'].tolist())),
             dtype=torch.long
         )
 
         processed_batch["all_semantic_ids"] = self._mapping_tensor
-        
+
         return processed_batch

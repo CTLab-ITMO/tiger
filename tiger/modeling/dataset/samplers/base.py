@@ -1,7 +1,4 @@
-from utils import MetaParent
-
-
-class TrainSampler(metaclass=MetaParent):
+class TrainSampler:
 
     def __init__(self):
         self._dataset = None
@@ -17,7 +14,7 @@ class TrainSampler(metaclass=MetaParent):
         raise NotImplementedError
 
 
-class EvalSampler(metaclass=MetaParent):
+class EvalSampler:
 
     def __init__(self, dataset, num_users, num_items):
         super().__init__()
