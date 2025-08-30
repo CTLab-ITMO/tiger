@@ -1,0 +1,20 @@
+{
+  "experiment_name": "generate_indices_rqvae",
+  "dataset": "Beauty",
+  "checkpoint": {
+    "root_path": "../checkpoints/rqvae_4000_64_custom",
+    "alpha": 0.035,
+    "beta": 0.01,
+    "epoch": 10000,
+    "checkpoint_name": "epoch_9999_collision_0.0012_model.pth"
+  },
+  "inference": {
+    "batch_size": 64,
+    "max_collision_iterations": 20,
+    "n_clusters": 10
+  },
+  "collision_handling": {
+    "sk_epsilon_default": 0.003,
+    "sk_epsilon_override": 0.0
+  }
+}
