@@ -321,7 +321,7 @@ class LetterFullDataset(ScientificFullDataset):
         dir_path = os.path.join(config["path_to_data_dir"], config["name"])
 
         os.makedirs(dir_path, exist_ok=True)
-        dataset_path = os.path.join(dir_path, "all_data.txt")
+        dataset_path = os.path.join(dir_path, "all_data_from_letter.txt")
 
         logger.info(f"Saving data to {dataset_path}")
 

@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import random
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -121,3 +122,37 @@ def save_sasrec_embeds(model, output_path):
         tensor_embeddings = torch.from_numpy(item_embeddings).float()
     assert tensor_embeddings.shape == (model._num_items, model._embedding_dim)
     torch.save(tensor_embeddings, output_path)
+
+
+def generate_inter_json(user_interactions_path, output_dir):
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    inter_dict = {}
+
+    with open(user_interactions_path, "r", encoding='utf-8') as f:
+        for line in f:
+            parts = line.strip().split()
+            if not parts:
+                continue
+
+            user_id_str = int(parts[0])
+            item_id_strs = parts[1:]
+            # Преобразуем все item_id к int
+            user_items = []
+            for item_str in item_id_strs:
+                try:
+                    user_items.append(int(item_str) - 1)
+                except ValueError:
+                    continue
+
+            if user_items:
+                inter_dict[user_id_str - 1] = user_items
+
+    inter_path = output_path / "all-data-inter.json"
+    with open(inter_path, "w", encoding='utf-8') as f:
+        json.dump(inter_dict, f, indent=4, ensure_ascii=False)
+
+    print(f"inter.json path: {inter_path}")
+    print(f"Total users count: {len(inter_dict)}")
+    return inter_path
