@@ -23,11 +23,11 @@ def main():
     logger.info(f'Config: \n{json.dumps(config, indent=2)}')
 
     checkpoint_config = config['checkpoint']
-    ckpt_path = os.path.join(checkpoint_config['root_path'])
+    ckpt_path = os.path.join(checkpoint_config['path'])
 
     logger.info(f'Loading checkpoint from: {ckpt_path}')
 
-    ckpt = torch.load(ckpt_path, map_location=torch.device('cpu'))
+    ckpt = torch.load(ckpt_path, map_location=torch.device('cpu'), weights_only=False)
     args = ckpt["args"]
     state_dict = ckpt["state_dict"]
 
@@ -57,10 +57,10 @@ def main():
     inference_config = config['inference']
     data_loader = DataLoader(
         data,
-        num_workers=inference_config['num_workers'],
-        batch_size=inference_config['batch_size'],
-        shuffle=inference_config['shuffle'],
-        pin_memory=inference_config['pin_memory']
+        num_workers=args.dataloader_num_workers,
+        batch_size=args.dataloader_batch_size,
+        shuffle=args.dataloader_shuffle,
+        pin_memory=args.dataloader_pin_memory
     )
 
     from k_means_constrained import KMeansConstrained
@@ -173,14 +173,8 @@ def main():
 
     logger.info(f'Collision handling completed after {tt} iterations')
 
-    output_config = config['output']
-    output_dir = output_config['output_dir'].format(dataset=config['dataset'], experiment_name=config['experiment_name'])
-    output_filename = output_config['output_filename'].format(
-        dataset=config['dataset'],
-        epoch=checkpoint_config['epoch'],
-        alpha=checkpoint_config['alpha'],
-        beta=checkpoint_config['beta']
-    )
+    output_dir = f"../checkpoints/{config['experiment_name']}"
+    output_filename = f"{config['dataset']}.index.epoch{checkpoint_config['epoch']}.alpha{args.alpha}-beta{args.beta}.json"
     output_file = os.path.join(output_dir, output_filename)
 
     os.makedirs(output_dir, exist_ok=True)

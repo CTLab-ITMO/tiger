@@ -196,7 +196,7 @@ class Trainer(object):
         ckpt_path = os.path.join(self.ckpt_dir, ckpt_file) if ckpt_file \
             else os.path.join(self.ckpt_dir, 'epoch_%d_collision_%.4f_model.pth' % (epoch, collision_rate))
         state = {
-            "args": self.args.dict,
+            "args": self.args,
             "epoch": epoch,
             "best_loss": self.best_loss,
             "best_collision_rate": self.best_collision_rate,

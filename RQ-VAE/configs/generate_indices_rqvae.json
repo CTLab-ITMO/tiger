@@ -1,21 +1,13 @@
 {
-  "experiment_name": "generate_indices_rqvae",
+  "experiment_name": "generate_indices_rqvae_test",
   "dataset": "Beauty",
   "checkpoint": {
-    "root_path": "../checkpoints/rqvae_4000_64_custom",
-    "alpha": 0.035,
-    "beta": 0.01,
-    "epoch": 10000,
-    "checkpoint_name": "epoch_9999_collision_0.0012_model.pth"
+    "path": "../checkpoints/rqvae_4000_64_custom/Aug-31-2025_22-57-29/best_collision_model.pth",
+    "epoch": 10
   },
   "inference": {
-    "batch_size": 64,
     "max_collision_iterations": 20,
     "n_clusters": 10
-  },
-  "output": {
-    "output_dir": "./data/{dataset}/{experiment_name}",
-    "output_filename": "{dataset}.index.epoch{epoch}.alpha{alpha}-beta{beta}.json"
   },
   "collision_handling": {
     "use_sinkhorn": true,
