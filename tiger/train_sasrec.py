@@ -118,7 +118,7 @@ def main():
     eval_dataloader = TorchDataloader(
         dataloader=DataLoader(
             dataset=test_sampler,
-            batch_size=256,
+            batch_size=config['dataloader']['validation']["batch_size"],
             drop_last=False,
             shuffle=False,
             collate_fn=BasicBatchProcessor()
