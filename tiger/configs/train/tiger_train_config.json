@@ -9,7 +9,7 @@
       "type": "last_item_prediction",
       "negative_sampler_type": "random"
     },
-    "letter_inter_json": "../data/Beauty/08-08-inter.json"
+    "letter_inter_json": "../data/Beauty/all-data-inter.json"
   },
   "dataloader": {
     "train": {
