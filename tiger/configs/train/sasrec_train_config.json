@@ -5,7 +5,7 @@
   "early_stopping_threshold": 40,
   "dataset": {
     "path_to_data_dir": "../data",
-    "name": "beauty",
+    "name": "Beauty",
     "max_sequence_length": 50,
     "samplers": {
       "type": "next_item_prediction",
@@ -13,8 +13,8 @@
     }
   },
   "dataloader_batch_size": {
-    "train": 256,
-    "validation": 256
+    "train": 2048,
+    "validation": 1536
   },
   "model": {
     "sequence_prefix": "item",

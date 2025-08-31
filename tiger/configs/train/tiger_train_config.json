@@ -1,43 +1,33 @@
 {
-  "experiment_name": "tiger_beauty_letter_probability_with_scale_big",
+  "experiment_name": "4000_64_12000_0.035_0.01_spec_params_test_tiger_1536_20",
   "best_metric": "validation/ndcg@20",
   "dataset": {
-    "type": "letter_full",
     "path_to_data_dir": "../data",
-    "name": "Beauty_letter",
+    "name": "Beauty",
     "max_sequence_length": 20,
     "samplers": {
       "type": "last_item_prediction",
       "negative_sampler_type": "random"
     },
-    "letter_inter_json": "../data/Beauty_letter/inter.json"
+    "letter_inter_json": "../data/Beauty/08-08-inter.json"
   },
   "dataloader": {
     "train": {
-      "type": "torch",
-      "batch_size": 256,
+      "batch_size": 1024,
       "batch_processor": {
-        "type": "letter",
-        "letter_index_json": "../data/Beauty_letter/index.json",
+        "letter_index_json": "../data/Beauty/letter_64_custom_Beauty_12000.alpha0.035-beta0.01.json",
         "semantic_length": 4
-      },
-      "drop_last": true,
-      "shuffle": true
+      }
     },
     "validation": {
-      "type": "torch",
-      "batch_size": 512,
+      "batch_size": 1536,
       "batch_processor": {
-        "type": "letter",
-        "letter_index_json": "../data/Beauty_letter/index.json",
+        "letter_index_json": "../data/Beauty/letter_64_custom_Beauty_12000.alpha0.035-beta0.01.json",
         "semantic_length": 4
-      },
-      "drop_last": false,
-      "shuffle": false
+      }
     }
   },
   "model": {
-    "type": "tiger_t5",
     "sequence_prefix": "item",
     "positive_prefix": "labels",
     "embedding_dim": 384,
@@ -53,119 +43,7 @@
     "initializer_range": 0.02
   },
   "optimizer": {
-    "type": "basic",
-    "optimizer": {
-      "type": "adam",
-      "lr": 3e-4
-    }
-  },
-  "loss": {
-    "type": "composite",
-    "losses": [
-      {
-        "type": "identity_map",
-        "predictions_prefix": "loss",
-        "output_prefix": "loss"
-      }
-    ],
-    "output_prefix": "loss"
-  },
-  "callback": {
-    "type": "composite",
-    "callbacks": [
-      {
-        "type": "metric",
-        "on_step": 1,
-        "loss_prefix": "loss"
-      },
-      {
-        "type": "validation",
-        "on_step": 64,
-        "pred_prefix": "predictions",
-        "labels_prefix": "labels",
-        "metrics": {
-          "recall@5": {
-            "type": "recall_semantic",
-            "k": 5
-          },
-          "recall@10": {
-            "type": "recall_semantic",
-            "k": 10
-          },
-          "recall@20": {
-            "type": "recall_semantic",
-            "k": 20
-          },
-          "ndcg@5": {
-            "type": "ndcg_semantic",
-            "k": 5
-          },
-          "ndcg@10": {
-            "type": "ndcg_semantic",
-            "k": 10
-          },
-          "ndcg@20": {
-            "type": "ndcg_semantic",
-            "k": 20
-          },
-          "coverage@5": {
-            "type": "coverage_semantic",
-            "k": 5
-          },
-          "coverage@10": {
-            "type": "coverage_semantic",
-            "k": 10
-          },
-          "coverage@20": {
-            "type": "coverage_semantic",
-            "k": 20
-          }
-        }
-      },
-      {
-        "type": "eval",
-        "on_step": 256,
-        "pred_prefix": "predictions",
-        "labels_prefix": "labels",
-        "metrics": {
-          "ndcg@5": {
-            "type": "ndcg_semantic",
-            "k": 5
-          },
-          "ndcg@10": {
-            "type": "ndcg_semantic",
-            "k": 10
-          },
-          "ndcg@20": {
-            "type": "ndcg_semantic",
-            "k": 20
-          },
-          "recall@5": {
-            "type": "recall_semantic",
-            "k": 5
-          },
-          "recall@10": {
-            "type": "recall_semantic",
-            "k": 10
-          },
-          "recall@20": {
-            "type": "recall_semantic",
-            "k": 20
-          },
-          "coverage@5": {
-            "type": "coverage_semantic",
-            "k": 5
-          },
-          "coverage@10": {
-            "type": "coverage_semantic",
-            "k": 10
-          },
-          "coverage@20": {
-            "type": "coverage_semantic",
-            "k": 20
-          }
-        }
-      }
-    ]
+    "type": "adam",
+    "lr": 3e-4
   }
 }

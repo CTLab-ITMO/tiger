@@ -189,13 +189,13 @@ class ScientificFullDataset(ScientificDataset):
         self._max_sequence_length = max_sequence_length
 
     @classmethod
-    def create_from_config(cls, config):
+    def create_from_config(cls, config, file_name="all_data"):
         data_dir_path = os.path.join(config["path_to_data_dir"], config["name"])
         max_sequence_length = config["max_sequence_length"]
         max_user_id, max_item_id = 0, 0
         train_dataset, validation_dataset, test_dataset = [], [], []
 
-        dataset_path = os.path.join(data_dir_path, "{}.txt".format("all_data"))
+        dataset_path = os.path.join(data_dir_path, "{}.txt".format(file_name))
         with open(dataset_path, "r") as f:
             data = f.readlines()
 
@@ -319,9 +319,9 @@ class LetterFullDataset(ScientificFullDataset):
             user_interactions = json.load(f)
 
         dir_path = os.path.join(config["path_to_data_dir"], config["name"])
-
+        file_name = "all_data_from_letter"
         os.makedirs(dir_path, exist_ok=True)
-        dataset_path = os.path.join(dir_path, "all_data_from_letter.txt")
+        dataset_path = os.path.join(dir_path, f"{file_name}.txt")
 
         logger.info(f"Saving data to {dataset_path}")
 
@@ -331,7 +331,7 @@ class LetterFullDataset(ScientificFullDataset):
                 items_repr = map(str, item_ids)
                 f.write(f"{user_id} {' '.join(items_repr)}\n")
 
-        dataset = ScientificFullDataset.create_from_config(config)
+        dataset = ScientificFullDataset.create_from_config(config, file_name)
 
         return cls(
             train_sampler=dataset._train_sampler,

@@ -227,7 +227,7 @@ def main():
     )
 
     logger.debug('Saving model...')
-    ckpt_dir = f'../checkpoints/{config['experiment_name']}'
+    ckpt_dir = f"../checkpoints/{config['experiment_name']}"
     os.makedirs(ckpt_dir, exist_ok=True)
 
     checkpoint_path = '{}/{}_final_state.pth'.format(

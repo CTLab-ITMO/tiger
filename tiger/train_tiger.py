@@ -5,17 +5,17 @@ import os
 import torch
 from torch.utils.data import DataLoader
 
-from tiger.modeling import utils
-from tiger.modeling.callbacks import CompositeCallback
-from tiger.modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
-from tiger.modeling.dataloader import TorchDataloader
-from tiger.modeling.dataloader.batch_processors import LetterBatchProcessor
-from tiger.modeling.dataset.base import LetterFullDataset
-from tiger.modeling.loss import IdentityMapLoss, CompositeLoss
-from tiger.modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
-from tiger.modeling.models import TigerModelT5
-from tiger.modeling.optimizer.base import BasicOptimizer, OPTIMIZERS
-from tiger.modeling.utils import parse_args, create_logger, fix_random_seed, tensorboards, DEVICE
+from modeling import utils
+from modeling.callbacks import CompositeCallback
+from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
+from modeling.dataloader import TorchDataloader
+from modeling.dataloader.batch_processors import LetterBatchProcessor
+from modeling.dataset.base import LetterFullDataset
+from modeling.loss import IdentityMapLoss, CompositeLoss
+from modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
+from modeling.models import TigerModelT5
+from modeling.optimizer.base import BasicOptimizer, OPTIMIZERS
+from modeling.utils import parse_args, create_logger, fix_random_seed, tensorboards, DEVICE
 
 logger = create_logger(name=__name__)
 seed_val = 42
@@ -59,7 +59,7 @@ def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None,
             model.train()
 
             for key, values in batch_.items():
-                batch_[key] = batch_[key].to(global_constants.DEVICE)
+                batch_[key] = batch_[key].to(utils.DEVICE)
 
             batch_.update(model(batch_))
             loss = loss_function(batch_)

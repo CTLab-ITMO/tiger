@@ -84,7 +84,7 @@ class LetterBatchProcessor(BasicBatchProcessor):
             if f"{prefix}.ids" in processed_batch:
                 ids = processed_batch[f"{prefix}.ids"]
                 lengths = processed_batch[f"{prefix}.length"]
-
+                assert ids.min() >= 0; assert ids.max() < self._mapping_tensor.size(0)
                 processed_batch[f"semantic_{prefix}.ids"] = self._mapping_tensor[ids].flatten()
                 processed_batch[f"semantic_{prefix}.length"] = lengths * self._semantic_length
 
