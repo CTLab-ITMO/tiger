@@ -82,8 +82,7 @@ class SasRecModel(SequentialTorchModel):
             negative_scores = torch.gather(
                 input=all_scores,
                 dim=1,
-                index=torch.randint(low=0, high=all_scores.shape[1], size=all_positive_sample_events.shape,
-                                    device=all_positive_sample_events.device)[..., None]
+                index=torch.randint(low=0, high=all_scores.shape[1], size=all_positive_sample_events.shape, device=all_positive_sample_events.device)[..., None]
             )[:, 0]  # (all_batch_items)
 
             # sample_ids, _ = create_masked_tensor(
@@ -111,7 +110,7 @@ class SasRecModel(SequentialTorchModel):
                 'bd,nd->bn',
                 last_embeddings,
                 self._item_embeddings.weight
-            )  # (batch_size, num_items + 2)
+            )  # (batch_size, num_items + 1)
 
             _, indices = torch.topk(
                 candidate_scores,

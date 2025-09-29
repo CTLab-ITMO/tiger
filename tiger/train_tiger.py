@@ -21,17 +21,18 @@ logger = create_logger(name=__name__)
 seed_val = 42
 
 
-def create_ranking_metrics(dataset):
+def create_ranking_metrics(dataset, codebook_size, num_codebooks):
+    print("Logs codebook size: {}, num codebooks: {}".format(codebook_size, num_codebooks))
     return {
-        "ndcg@5": NDCGSemanticMetric(5),
-        "ndcg@10": NDCGSemanticMetric(10),
-        "ndcg@20": NDCGSemanticMetric(20),
-        "recall@5": RecallSemanticMetric(5),
-        "recall@10": RecallSemanticMetric(10),
-        "recall@20": RecallSemanticMetric(20),
-        "coverage@5": CoverageSemanticMetric(5, dataset.meta['num_items']),
-        "coverage@10": CoverageSemanticMetric(10, dataset.meta['num_items']),
-        "coverage@20": CoverageSemanticMetric(20, dataset.meta['num_items'])
+        "ndcg@5": NDCGSemanticMetric(5, codebook_size, num_codebooks),
+        "ndcg@10": NDCGSemanticMetric(10, codebook_size, num_codebooks),
+        "ndcg@20": NDCGSemanticMetric(20, codebook_size, num_codebooks),
+        "recall@5": RecallSemanticMetric(5, codebook_size, num_codebooks),
+        "recall@10": RecallSemanticMetric(10, codebook_size, num_codebooks),
+        "recall@20": RecallSemanticMetric(20, codebook_size, num_codebooks),
+        "coverage@5": CoverageSemanticMetric(5, codebook_size, num_codebooks, dataset.meta['num_items']),
+        "coverage@10": CoverageSemanticMetric(10, codebook_size, num_codebooks, dataset.meta['num_items']),
+        "coverage@20": CoverageSemanticMetric(20, codebook_size, num_codebooks, dataset.meta['num_items'])
     }
 
 
@@ -188,7 +189,7 @@ def main():
                 eval_dataloader=eval_dataloader,
                 optimizer=optimizer,
                 on_step=64,
-                metrics=create_ranking_metrics(dataset),
+                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
                 pred_prefix="predictions",
                 labels_prefix="labels",
                 loss_prefix=None
@@ -202,7 +203,7 @@ def main():
                 eval_dataloader=eval_dataloader,
                 optimizer=optimizer,
                 on_step=256,
-                metrics=create_ranking_metrics(dataset),
+                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
                 pred_prefix="predictions",
                 labels_prefix="labels",
                 loss_prefix=None

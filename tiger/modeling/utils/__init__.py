@@ -91,7 +91,7 @@ def dict_to_str(x, params):
     return '_'.join(parts).replace('.', '-')
 
 
-def create_masked_tensor(data, lengths):
+def create_masked_tensor(data, lengths, is_tiger=False):
     batch_size = lengths.shape[0]
     max_sequence_length = lengths.max().item()
 
@@ -112,6 +112,8 @@ def create_masked_tensor(data, lengths):
         device=DEVICE
     )[None].tile([batch_size, 1]) < lengths[:, None]  # (batch_size, max_seq_len)
 
+    if is_tiger:
+        mask = torch.flip(mask, dims=[-1])
     padded_tensor[mask] = data
 
     return padded_tensor, mask

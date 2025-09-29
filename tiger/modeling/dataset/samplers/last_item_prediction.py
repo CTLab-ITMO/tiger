@@ -1,3 +1,5 @@
+import copy
+
 from ...dataset.samplers.base import TrainSampler, EvalSampler
 
 

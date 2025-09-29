@@ -52,8 +52,10 @@ class NDCGMetric(BaseMetric):
 
 class NDCGSemanticMetric(BaseMetric):
 
-    def __init__(self, k):
+    def __init__(self, k, codebook_size, num_codebooks):
         self._k = k
+        self._codebook_size = codebook_size
+        self._num_codebooks = num_codebooks
 
     def __call__(self, inputs, pred_prefix, labels_prefix):
         predictions = inputs[pred_prefix].long()
@@ -62,10 +64,9 @@ class NDCGSemanticMetric(BaseMetric):
 
         labels = inputs['semantic_{}.ids'.format(labels_prefix)].long()  # (batch_size)
         labels = labels.reshape(batch_size, 1, sid_length)
-        offsetted_labels = labels + 256 * torch.arange(4, device=labels.device)[None, None, :]
+        offsetted_labels = labels + self._codebook_size * torch.arange(self._num_codebooks, device=labels.device)[None, None, :]
 
-        hits = (torch.eq(predictions[:, :self._k, :], offsetted_labels).sum(
-            dim=-1) == sid_length).float()  # (batch_size, top_k_indices)
+        hits = (torch.eq(predictions[:, :self._k, :], offsetted_labels).sum(dim=-1) == sid_length).float() # (batch_size, top_k_indices)
 
         discount_factor = 1 / torch.log2(torch.arange(1, self._k + 1, 1).float() + 1.).to(hits.device)  # (k)
         dcg = torch.einsum('bk,k->b', hits, discount_factor)  # (batch_size)
@@ -92,8 +93,10 @@ class RecallMetric(BaseMetric):
 
 class RecallSemanticMetric(BaseMetric):
 
-    def __init__(self, k):
+    def __init__(self, k, codebook_size, num_codebooks):
         self._k = k
+        self._codebook_size = codebook_size
+        self._num_codebooks = num_codebooks
 
     def __call__(self, inputs, pred_prefix, labels_prefix):
         predictions = inputs[pred_prefix].long()
@@ -102,10 +105,9 @@ class RecallSemanticMetric(BaseMetric):
 
         labels = inputs['semantic_{}.ids'.format(labels_prefix)].long()  # (batch_size)
         labels = labels.reshape(batch_size, 1, sid_length)
-        offsetted_labels = labels + 256 * torch.arange(4, device=labels.device)[None, None, :]
+        offsetted_labels = labels + self._codebook_size * torch.arange(self._num_codebooks, device=labels.device)[None, None, :]
 
-        hits = (torch.eq(predictions[:, :self._k, :], offsetted_labels).sum(
-            dim=-1) == sid_length).float()  # (batch_size, top_k_indices)
+        hits = (torch.eq(predictions[:, :self._k, :], offsetted_labels).sum(dim=-1) == sid_length).float() # (batch_size, top_k_indices)
         recall = hits.sum(dim=-1)  # (batch_size)
 
         return recall.cpu().tolist()
@@ -127,13 +129,15 @@ class CoverageMetric(StatefullMetric):
 
 class CoverageSemanticMetric(StatefullMetric):
 
-    def __init__(self, k, num_items):
+    def __init__(self, k, codebook_size, num_codebooks, num_items):
         self._k = k
+        self._codebook_size = codebook_size
+        self._num_codebooks = num_codebooks
         self._num_items = num_items
 
     def __call__(self, inputs, pred_prefix, labels_prefix):
         predictions = inputs[pred_prefix].long()
-        predictions = predictions[:, :self._k, :].sum(dim=-1).long()
+        predictions = (predictions[:, :self._k, :] + torch.pow(self._codebook_size, torch.arange(self._num_codebooks, device=predictions.device))).sum(dim=-1)
         return predictions.view(-1).long().cpu().detach().tolist()  # (batch_size * k)
 
     def reduce(self, values):
