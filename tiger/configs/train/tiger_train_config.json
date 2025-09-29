@@ -1,5 +1,5 @@
 {
-  "experiment_name": "4000_64_12000_0.035_0.01_spec_params_test_tiger_1536_20",
+  "experiment_name": "tiger_beauty_t5_rqkmeans_letter_format_fixed_v2_init_open_source",
   "best_metric": "validation/ndcg@20",
   "dataset": {
     "path_to_data_dir": "../data",
@@ -9,20 +9,20 @@
       "type": "last_item_prediction",
       "negative_sampler_type": "random"
     },
-    "letter_inter_json": "../data/Beauty/all-data-inter.json"
+    "letter_inter_json": "../data/Beauty/_inter.json"
   },
   "dataloader": {
     "train": {
-      "batch_size": 1024,
+      "batch_size": 256,
       "batch_processor": {
-        "letter_index_json": "../data/Beauty/letter_64_custom_Beauty_12000.alpha0.035-beta0.01.json",
+        "letter_index_json": "../data/Beauty/_index.json",
         "semantic_length": 4
       }
     },
     "validation": {
-      "batch_size": 1536,
+      "batch_size": 1024,
       "batch_processor": {
-        "letter_index_json": "../data/Beauty/letter_64_custom_Beauty_12000.alpha0.035-beta0.01.json",
+        "letter_index_json": "../data/Beauty/_index.json",
         "semantic_length": 4
       }
     }
@@ -36,7 +36,7 @@
     "num_heads": 6,
     "num_encoder_layers": 4,
     "num_decoder_layers": 4,
-    "dim_feedforward": 1024,
+    "dim_feedforward": 2048,
     "dropout": 0.1,
     "activation": "relu",
     "layer_norm_eps": 1e-9,

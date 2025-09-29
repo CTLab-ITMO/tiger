@@ -51,7 +51,7 @@ class CorrectItemsLogitsProcessor(LogitsProcessor):
         return scores
 
 
-class TigerModelT5(TorchModel, config_name='tiger_t5'):
+class TigerModelT5(TorchModel):
     def __init__(
             self,
             sequence_prefix,
@@ -101,7 +101,7 @@ class TigerModelT5(TorchModel, config_name='tiger_t5'):
         )
         self.config = t5_config
         self.model = T5ForConditionalGeneration(config=t5_config)
-        # self._init_weights(initializer_range)
+        self._init_weights(initializer_range)
 
     @classmethod
     def create_from_config(cls, config: Dict, **kwargs):
