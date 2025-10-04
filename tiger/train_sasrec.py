@@ -137,15 +137,9 @@ def main():
     total_params = sum(p.numel() for p in model.parameters())
     print(f"Total model parameters: {total_params}")
 
-    loss_function = CompositeLoss(
-        losses=[
-            SASRecLoss(
-                positive_prefix="positive_scores",
-                negative_prefix="negative_scores",
-                output_prefix="downstream_loss"
-            )
-        ],
-        weights=[1.0],
+    loss_function = SASRecLoss(
+        positive_prefix="positive_scores",
+        negative_prefix="negative_scores",
         output_prefix="loss"
     )
 
