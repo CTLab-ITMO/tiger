@@ -10,7 +10,7 @@ from modeling.callbacks import CompositeCallback
 from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
 from modeling.dataloader.base import TorchDataloader
 from modeling.dataloader.batch_processors import BasicBatchProcessor
-from modeling.dataset.base import ScientificDataset
+from modeling.dataset import ScientificDataset
 from modeling.loss import SASRecLoss, CompositeLoss
 from modeling.metric.base import NDCGMetric, RecallMetric, CoverageMetric
 from modeling.models import SasRecModel

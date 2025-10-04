@@ -10,7 +10,7 @@ from modeling.callbacks import CompositeCallback
 from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
 from modeling.dataloader import TorchDataloader
 from modeling.dataloader.batch_processors import LetterBatchProcessor
-from modeling.dataset.base import LetterFullDataset
+from modeling.dataset import LetterFullDataset
 from modeling.loss import IdentityMapLoss, CompositeLoss
 from modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
 from modeling.models import TigerModelT5
