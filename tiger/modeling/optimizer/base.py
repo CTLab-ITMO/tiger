@@ -1,18 +1,19 @@
 import torch
 
-OPTIMIZERS = {
+_OPTIMIZERS = {
     'sgd': torch.optim.SGD,
     'adam': torch.optim.Adam,
     'adamw': torch.optim.AdamW
 }
 
-class BaseOptimizer:
-    pass
 
-class BasicOptimizer(BaseOptimizer):
-    def __init__(self, model, optimizer, clip_grad_threshold=None):
+class BasicOptimizer:
+    def __init__(self, model, optimizer_config, clip_grad_threshold=None):
         self._model = model
-        self._optimizer = optimizer
+        self._optimizer = _OPTIMIZERS[optimizer_config.pop('type')](
+            model.parameters(),
+            **optimizer_config
+        )
         self._clip_grad_threshold = clip_grad_threshold
 
     def step(self, loss):

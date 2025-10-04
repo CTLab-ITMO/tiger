@@ -13,7 +13,7 @@ from modeling.dataset import LetterFullDataset
 from modeling.loss import IdentityMapLoss, CompositeLoss
 from modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
 from modeling.models import TigerModelT5
-from modeling.optimizer.base import BasicOptimizer, OPTIMIZERS
+from modeling.optimizer import BasicOptimizer
 from modeling.utils import parse_args, create_logger, fix_random_seed, tensorboards, DEVICE
 
 logger = create_logger(name=__name__)
@@ -143,14 +143,9 @@ def main():
         output_prefix="loss"
     )
 
-    optimizer_cfg = copy.deepcopy(config['optimizer'])
-    _optimizer = OPTIMIZERS[optimizer_cfg.pop('type')](
-        model.parameters(),
-        **optimizer_cfg
-    )
     optimizer = BasicOptimizer(
         model=model,
-        optimizer=_optimizer,
+        optimizer_config=copy.deepcopy(config['optimizer']),
         clip_grad_threshold=config.get('clip_grad_threshold', None)
     )
 
