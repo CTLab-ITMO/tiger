@@ -1,5 +1,3 @@
-import copy
-
 from ...dataset.samplers.base import TrainSampler, EvalSampler
 
 
@@ -12,7 +10,7 @@ class LastItemPredictionTrainSampler(TrainSampler):
         self._num_items = num_items
 
     @classmethod
-    def create_from_config(cls, config, **kwargs):
+    def create_from_config(cls, **kwargs):
         return cls(
             dataset=kwargs['dataset'],
             num_users=kwargs['num_users'],
@@ -40,7 +38,7 @@ class LastItemPredictionTrainSampler(TrainSampler):
 class LastItemPredictionEvalSampler(EvalSampler):
 
     @classmethod
-    def create_from_config(cls, config, **kwargs):
+    def create_from_config(cls, **kwargs):
         return cls(
             dataset=kwargs['dataset'],
             num_users=kwargs['num_users'],

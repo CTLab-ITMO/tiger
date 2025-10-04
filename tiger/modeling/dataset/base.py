@@ -17,19 +17,16 @@ def create_samplers(config, train_dataset, validation_dataset, test_dataset, num
     if config['type'] == "next_item_prediction":
         return (
             NextItemPredictionTrainSampler.create_from_config(
-                config=config,
                 dataset=train_dataset,
                 num_users=num_users,
                 num_items=num_items
             ),
             NextItemPredictionEvalSampler.create_from_config(
-                config=config,
                 dataset=validation_dataset,
                 num_users=num_users,
                 num_items=num_items
             ),
             NextItemPredictionEvalSampler.create_from_config(
-                config=config,
                 dataset=test_dataset,
                 num_users=num_users,
                 num_items=num_items
@@ -38,19 +35,16 @@ def create_samplers(config, train_dataset, validation_dataset, test_dataset, num
     elif config['type'] == "last_item_prediction":
         return (
             LastItemPredictionTrainSampler.create_from_config(
-                config=config,
                 dataset=train_dataset,
                 num_users=num_users,
                 num_items=num_items
             ),
             LastItemPredictionEvalSampler.create_from_config(
-                config=config,
                 dataset=validation_dataset,
                 num_users=num_users,
                 num_items=num_items
             ),
             LastItemPredictionEvalSampler.create_from_config(
-                config=config,
                 dataset=test_dataset,
                 num_users=num_users,
                 num_items=num_items
