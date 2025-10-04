@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from modeling import utils
 from modeling.callbacks import CompositeCallback
 from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
-from modeling.dataloader import TorchDataloader, LetterBatchProcessor
+from modeling.dataloader import LetterBatchProcessor
 from modeling.dataset import LetterFullDataset
 from modeling.loss import IdentityMapLoss, CompositeLoss
 from modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
@@ -96,34 +96,28 @@ def main():
 
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
-    train_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=train_sampler,
-            batch_size=config['dataloader']['train']["batch_size"],
-            drop_last=True,
-            shuffle=True,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['train']["batch_processor"])
-        )
+    train_dataloader = DataLoader(
+        dataset=train_sampler,
+        batch_size=config['dataloader']['train']["batch_size"],
+        drop_last=True,
+        shuffle=True,
+        collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['train']["batch_processor"])
     )
 
-    validation_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=validation_sampler,
-            batch_size=config['dataloader']['validation']["batch_size"],
-            drop_last=False,
-            shuffle=False,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
-        )
+    validation_dataloader = DataLoader(
+        dataset=validation_sampler,
+        batch_size=config['dataloader']['validation']["batch_size"],
+        drop_last=False,
+        shuffle=False,
+        collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
     )
 
-    eval_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=test_sampler,
-            batch_size=config['dataloader']['validation']["batch_size"],
-            drop_last=False,
-            shuffle=False,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
-        )
+    eval_dataloader = DataLoader(
+        dataset=test_sampler,
+        batch_size=config['dataloader']['validation']["batch_size"],
+        drop_last=False,
+        shuffle=False,
+        collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
     )
 
     model = TigerModelT5.create_from_config(config['model'], **dataset.meta).to(DEVICE)

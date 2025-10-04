@@ -5,12 +5,7 @@ import murmurhash
 import torch
 
 
-class BaseBatchProcessor:
-
-    def __call__(self, batch):
-        raise NotImplementedError
-
-class BasicBatchProcessor(BaseBatchProcessor):
+class BasicBatchProcessor:
 
     def __call__(self, batch):
         processed_batch = {}

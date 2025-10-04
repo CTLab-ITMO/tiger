@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from modeling import utils
 from modeling.callbacks import CompositeCallback
 from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
-from modeling.dataloader import TorchDataloader, BasicBatchProcessor
+from modeling.dataloader import BasicBatchProcessor
 from modeling.dataset import ScientificDataset
 from modeling.loss import SASRecLoss
 from modeling.metric.base import NDCGMetric, RecallMetric, CoverageMetric
@@ -94,34 +94,28 @@ def main():
 
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
-    train_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=train_sampler,
-            batch_size=config["dataloader_batch_size"]["train"],
-            drop_last=True,
-            shuffle=True,
-            collate_fn=BasicBatchProcessor()
-        )
+    train_dataloader = DataLoader(
+        dataset=train_sampler,
+        batch_size=config["dataloader_batch_size"]["train"],
+        drop_last=True,
+        shuffle=True,
+        collate_fn=BasicBatchProcessor()
     )
 
-    validation_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=validation_sampler,
-            batch_size=config["dataloader_batch_size"]["validation"],
-            drop_last=False,
-            shuffle=False,
-            collate_fn=BasicBatchProcessor()
-        )
+    validation_dataloader = DataLoader(
+        dataset=validation_sampler,
+        batch_size=config["dataloader_batch_size"]["validation"],
+        drop_last=False,
+        shuffle=False,
+        collate_fn=BasicBatchProcessor()
     )
 
-    eval_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=test_sampler,
-            batch_size=config["dataloader_batch_size"]["validation"],
-            drop_last=False,
-            shuffle=False,
-            collate_fn=BasicBatchProcessor()
-        )
+    eval_dataloader = DataLoader(
+        dataset=test_sampler,
+        batch_size=config["dataloader_batch_size"]["validation"],
+        drop_last=False,
+        shuffle=False,
+        collate_fn=BasicBatchProcessor()
     )
 
     model = SasRecModel.create_from_config(config['model'], **dataset.meta).to(utils.DEVICE)
