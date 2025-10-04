@@ -123,22 +123,6 @@ class ScientificDataset(BaseDataset):
 
 
 class ScientificFullDataset(ScientificDataset):
-    def __init__(
-            self,
-            train_sampler,
-            validation_sampler,
-            test_sampler,
-            num_users,
-            num_items,
-            max_sequence_length,
-    ):
-        self._train_sampler = train_sampler
-        self._validation_sampler = validation_sampler
-        self._test_sampler = test_sampler
-        self._num_users = num_users
-        self._num_items = num_items
-        self._max_sequence_length = max_sequence_length
-
     @classmethod
     def create_from_config(cls, config, file_name="all_data"):
         data_dir_path = os.path.join(config["path_to_data_dir"], config["name"])
