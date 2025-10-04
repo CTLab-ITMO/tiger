@@ -1,54 +1,11 @@
 from typing import Dict
 
 import torch
-from transformers import T5ForConditionalGeneration, T5Config, LogitsProcessor
+from transformers import T5ForConditionalGeneration, T5Config
 
 from ..models import TorchModel
 from ..utils import create_masked_tensor, DEVICE
 
-
-class CorrectItemsLogitsProcessor(LogitsProcessor):
-    def __init__(self, num_codebooks, codebook_size):
-        self.num_codebooks = num_codebooks
-        self.codebook_size = codebook_size
-
-        import json
-        import re
-        path = '../data/Beauty/index.json'
-        with open(path, 'r') as f:
-            data = json.load(f)
-        eval_batch = []
-        for key, semantic_ids in data.items():
-            numbers = [int(re.search(r'\d+', item).group()) + idx * self.codebook_size for idx, item in enumerate(semantic_ids)]
-            eval_batch.append(numbers)
-
-        self.index_semantic_ids = torch.tensor(eval_batch, device=DEVICE, dtype=torch.int64)
-
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
-        next_sid_codebook_num = (torch.minimum((input_ids[:, -1].max() // self.codebook_size), torch.as_tensor(self.num_codebooks - 1)).item() + 1) % self.num_codebooks
-
-        if next_sid_codebook_num == 0:
-            scores[:, self.codebook_size:] = -torch.inf
-        else:
-            current_prefixes = input_ids[:, -next_sid_codebook_num:]  # (all_sequences, 1)
-            possible_next_items_mask = (
-                torch.eq(current_prefixes[:, None, :], self.index_semantic_ids[None, :, :next_sid_codebook_num]).long().sum(dim=-1) == next_sid_codebook_num
-            )  # (all_sequences, all_items)
-
-            a = self.index_semantic_ids[None, :, next_sid_codebook_num].tile(dims=[possible_next_items_mask.shape[0], 1])
-            a[~possible_next_items_mask] = 0
-
-            scores_mask = torch.zeros_like(scores).bool()
-            scores_mask = torch.scatter_add(
-                input=scores_mask,
-                dim=-1,
-                index=a,
-                src=torch.ones_like(a).bool()
-            )
-            scores[~scores_mask] = -torch.inf
-            scores[:, 0] = -torch.inf
-
-        return scores
 
 
 class TigerModelT5(TorchModel):
@@ -102,22 +59,6 @@ class TigerModelT5(TorchModel):
         self.config = t5_config
         self.model = T5ForConditionalGeneration(config=t5_config)
         self._init_weights(initializer_range)
-
-    @classmethod
-    def create_from_config(cls, config: Dict, **kwargs):
-        return cls(
-            sequence_prefix=config["sequence_prefix"],
-            positive_prefix=config['positive_prefix'],
-            embedding_dim=config["embedding_dim"],
-            codebook_size=config["codebook_size"],
-            num_positions=config["num_positions"],
-            num_heads=config.get("num_heads", int(config["embedding_dim"] // 64)),
-            num_encoder_layers=config["num_encoder_layers"],
-            num_decoder_layers=config["num_decoder_layers"],
-            dim_feedforward=config.get("dim_feedforward", 4 * config["embedding_dim"]),
-            dropout=config.get("dropout", 0.0),
-            initializer_range=config.get("initializer_range", 0.02),
-        )
 
     def forward(self, inputs):
         all_sample_events = inputs["semantic_{}.ids".format(self._sequence_prefix)]  # (all_batch_events)
@@ -186,3 +127,21 @@ class TigerModelT5(TorchModel):
             return {
                 'predictions': output[:, 1:].reshape(-1, 20, 5 - 1)
             }
+
+
+    @classmethod
+    def create_from_config(cls, config: Dict, **kwargs):
+        return cls(
+            sequence_prefix=config["sequence_prefix"],
+            positive_prefix=config['positive_prefix'],
+            embedding_dim=config["embedding_dim"],
+            codebook_size=config["codebook_size"],
+            num_positions=config["num_positions"],
+            num_heads=config.get("num_heads", int(config["embedding_dim"] // 64)),
+            num_encoder_layers=config["num_encoder_layers"],
+            num_decoder_layers=config["num_decoder_layers"],
+            dim_feedforward=config.get("dim_feedforward", 4 * config["embedding_dim"]),
+            dropout=config.get("dropout", 0.0),
+            initializer_range=config.get("initializer_range", 0.02),
+        )
+

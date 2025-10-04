@@ -158,7 +158,6 @@ def main():
     optimizer = BasicOptimizer(
         model=model,
         optimizer=_optimizer,
-        scheduler=None,
         clip_grad_threshold=config.get('clip_grad_threshold', None)
     )
 

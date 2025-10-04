@@ -3,7 +3,6 @@ from ..models import SequentialTorchModel
 
 
 class SasRecModel(SequentialTorchModel):
-
     def __init__(
             self,
             sequence_prefix,
@@ -28,28 +27,12 @@ class SasRecModel(SequentialTorchModel):
             dim_feedforward=dim_feedforward,
             dropout=dropout,
             activation=activation,
-            layer_norm_eps=layer_norm_eps,
-            is_causal=True
+            layer_norm_eps=layer_norm_eps
         )
         self._sequence_prefix = sequence_prefix
         self._positive_prefix = positive_prefix
 
         self._init_weights(initializer_range)
-
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        return cls(
-            sequence_prefix=config['sequence_prefix'],
-            positive_prefix=config['positive_prefix'],
-            num_items=kwargs['num_items'],
-            max_sequence_length=kwargs['max_sequence_length'],
-            embedding_dim=config['embedding_dim'],
-            num_heads=config.get('num_heads', int(config['embedding_dim'] // 64)),
-            num_layers=config['num_layers'],
-            dim_feedforward=config.get('dim_feedforward', 4 * config['embedding_dim']),
-            dropout=config.get('dropout', 0.0),
-            initializer_range=config.get('initializer_range', 0.02)
-        )
 
     def forward(self, inputs):
         all_sample_events = inputs['{}.ids'.format(self._sequence_prefix)]  # (all_batch_events)
@@ -85,26 +68,22 @@ class SasRecModel(SequentialTorchModel):
                 index=torch.randint(low=0, high=all_scores.shape[1], size=all_positive_sample_events.shape, device=all_positive_sample_events.device)[..., None]
             )[:, 0]  # (all_batch_items)
 
-            # sample_ids, _ = create_masked_tensor(
-            #     data=all_sample_events,
-            #     lengths=all_sample_lengths
-            # )  # (batch_size, seq_len)
-
-            # sample_ids = torch.repeat_interleave(sample_ids, all_sample_lengths, dim=0)  # (all_batch_events, seq_len)
-
-            # negative_scores = torch.scatter(
-            #     input=all_scores,
-            #     dim=1,
-            #     index=sample_ids,
-            #     src=torch.ones_like(sample_ids) * (-torch.inf)
-            # )  # (all_batch_events, num_items)
-
             return {
                 'positive_scores': positive_scores,
                 'negative_scores': negative_scores
             }
         else:  # eval mode
-            last_embeddings = self._get_last_embedding(embeddings, mask)  # (batch_size, embedding_dim)
+            lengths = torch.sum(mask, dim=-1) - 1  # (batch_size)
+            last_masks = mask.gather(dim=1, index=lengths[:, None])  # (batch_size, 1)
+            lengths = torch.tile(lengths[:, None, None], (1, 1, embeddings.shape[-1]))  # (batch_size, 1, emb_dim)
+            last_embeddings = embeddings.gather(dim=1, index=lengths)  # (batch_size, 1, emb_dim)
+            last_embeddings = last_embeddings[last_masks]  # (batch_size, emb_dim)
+            if not torch.allclose(embeddings[mask][-1], last_embeddings[-1]):
+                print(embeddings)
+                print(lengths, lengths.max(), lengths.min())
+                print(embeddings[mask][-1])
+                print(last_embeddings[-1])
+                assert False
             # b - batch_size, n - num_candidates, d - embedding_dim
             candidate_scores = torch.einsum(
                 'bd,nd->bn',
@@ -120,3 +99,19 @@ class SasRecModel(SequentialTorchModel):
             return {
                 'predictions': indices
             }
+
+
+    @classmethod
+    def create_from_config(cls, config, **kwargs):
+        return cls(
+            sequence_prefix=config['sequence_prefix'],
+            positive_prefix=config['positive_prefix'],
+            num_items=kwargs['num_items'],
+            max_sequence_length=kwargs['max_sequence_length'],
+            embedding_dim=config['embedding_dim'],
+            num_heads=config.get('num_heads', int(config['embedding_dim'] // 64)),
+            num_layers=config['num_layers'],
+            dim_feedforward=config.get('dim_feedforward', 4 * config['embedding_dim']),
+            dropout=config.get('dropout', 0.0),
+            initializer_range=config.get('initializer_range', 0.02)
+        )

@@ -118,7 +118,7 @@ def main():
     eval_dataloader = TorchDataloader(
         dataloader=DataLoader(
             dataset=test_sampler,
-            batch_size=config['dataloader']['validation']["batch_size"],
+            batch_size=config["dataloader_batch_size"]["validation"],
             drop_last=False,
             shuffle=False,
             collate_fn=BasicBatchProcessor()
@@ -156,7 +156,6 @@ def main():
             model.parameters(),
             **optimizer_cfg
         ),
-        scheduler=None,
         clip_grad_threshold=config.get('clip_grad_threshold', None)
     )
 
