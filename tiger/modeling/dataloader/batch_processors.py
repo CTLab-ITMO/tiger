@@ -10,21 +10,6 @@ class BaseBatchProcessor:
     def __call__(self, batch):
         raise NotImplementedError
 
-
-class IdentityBatchProcessor(BaseBatchProcessor):
-
-    def __call__(self, batch):
-        return torch.tensor(batch)
-
-
-class EmbedBatchProcessor(BaseBatchProcessor):
-    def __call__(self, batch):
-        ids = torch.tensor([entry["item.id"] for entry in batch])
-        embeds = torch.stack([entry["item.embed"] for entry in batch])
-
-        return {"ids": ids, "embeddings": embeds}
-
-
 class BasicBatchProcessor(BaseBatchProcessor):
 
     def __call__(self, batch):

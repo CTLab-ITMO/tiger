@@ -8,8 +8,7 @@ from torch.utils.data import DataLoader
 from modeling import utils
 from modeling.callbacks import CompositeCallback
 from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
-from modeling.dataloader import TorchDataloader
-from modeling.dataloader.batch_processors import LetterBatchProcessor
+from modeling.dataloader import TorchDataloader, LetterBatchProcessor
 from modeling.dataset import LetterFullDataset
 from modeling.loss import IdentityMapLoss, CompositeLoss
 from modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
@@ -188,7 +187,8 @@ def main():
                 eval_dataloader=eval_dataloader,
                 optimizer=optimizer,
                 on_step=64,
-                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
+                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'],
+                                               num_codebooks=4),
                 pred_prefix="predictions",
                 labels_prefix="labels",
                 loss_prefix=None
@@ -202,7 +202,8 @@ def main():
                 eval_dataloader=eval_dataloader,
                 optimizer=optimizer,
                 on_step=256,
-                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
+                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'],
+                                               num_codebooks=4),
                 pred_prefix="predictions",
                 labels_prefix="labels",
                 loss_prefix=None

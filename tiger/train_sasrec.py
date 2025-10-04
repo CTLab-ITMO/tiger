@@ -8,10 +8,9 @@ from torch.utils.data import DataLoader
 from modeling import utils
 from modeling.callbacks import CompositeCallback
 from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
-from modeling.dataloader.base import TorchDataloader
-from modeling.dataloader.batch_processors import BasicBatchProcessor
+from modeling.dataloader import TorchDataloader, BasicBatchProcessor
 from modeling.dataset import ScientificDataset
-from modeling.loss import SASRecLoss, CompositeLoss
+from modeling.loss import SASRecLoss
 from modeling.metric.base import NDCGMetric, RecallMetric, CoverageMetric
 from modeling.models import SasRecModel
 from modeling.optimizer.base import BasicOptimizer, OPTIMIZERS

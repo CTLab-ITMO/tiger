@@ -1,2 +1,2 @@
 from .base import TorchDataloader
-from .batch_processors import BaseBatchProcessor, IdentityBatchProcessor
+from .batch_processors import BaseBatchProcessor, BasicBatchProcessor, LetterBatchProcessor
