@@ -18,7 +18,7 @@
   },
   "model": {
     "sequence_prefix": "item",
-    "positive_prefix": "positive",
+    "positive_prefix": "labels",
     "candidate_prefix": "candidates",
     "embedding_dim": 64,
     "num_heads": 2,

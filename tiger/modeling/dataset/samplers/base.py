@@ -1,26 +1,52 @@
+import copy
+
+
 class TrainSampler:
+    def __init__(self, dataset, prediction_type):
+        self._dataset = dataset
+        self._prediction_type = prediction_type
 
-    def __init__(self):
-        self._dataset = None
+        self._transforms = {
+            'last_item_prediction': self._last_item_transform,
+            'next_item_prediction': self._next_item_transform,
+        }
 
-    @property
-    def dataset(self):
-        return self._dataset
+    def _last_item_transform(self, sample):
+        item_sequence = sample['item.ids'][:-1]
+        last_item = sample['item.ids'][-1]
+        return {
+            'user.ids': sample['user.ids'],
+            'user.length': sample['user.length'],
+            'item.ids': item_sequence,
+            'item.length': len(item_sequence),
+            'labels.ids': [last_item],
+            'labels.length': 1,
+        }
+
+    def _next_item_transform(self, sample):
+        item_sequence = sample['item.ids'][:-1]
+        next_item_sequence = sample['item.ids'][1:]
+        return {
+            'user.ids': sample['user.ids'],
+            'user.length': sample['user.length'],
+            'item.ids': item_sequence,
+            'item.length': len(item_sequence),
+            'labels.ids': next_item_sequence,
+            'labels.length': len(next_item_sequence)
+        }
+
+    def __getitem__(self, index):
+        sample = copy.deepcopy(self._dataset[index])
+        return self._transforms[self._prediction_type](sample)
 
     def __len__(self):
         return len(self._dataset)
 
-    def __getitem__(self, index):
-        raise NotImplementedError
-
 
 class EvalSampler:
-
-    def __init__(self, dataset, num_users, num_items):
+    def __init__(self, dataset):
         super().__init__()
         self._dataset = dataset
-        self._num_users = num_users
-        self._num_items = num_items
 
     @property
     def dataset(self):
@@ -38,10 +64,14 @@ class EvalSampler:
         return {
             'user.ids': sample['user.ids'],
             'user.length': sample['user.length'],
-
             'item.ids': item_sequence,
             'item.length': len(item_sequence),
-
             'labels.ids': [next_item],
             'labels.length': 1
         }
+
+
+def create_samplers(prediction_type, train_dataset, validation_dataset, test_dataset):
+    return (TrainSampler(train_dataset, prediction_type),
+            EvalSampler(validation_dataset),
+            EvalSampler(test_dataset))

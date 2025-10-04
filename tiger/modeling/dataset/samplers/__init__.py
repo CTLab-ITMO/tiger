@@ -1,3 +1,1 @@
-from .base import TrainSampler, EvalSampler
-from .next_item_prediction import NextItemPredictionTrainSampler, NextItemPredictionEvalSampler
-from .last_item_prediction import LastItemPredictionTrainSampler, LastItemPredictionEvalSampler
+from .base import TrainSampler, EvalSampler, create_samplers

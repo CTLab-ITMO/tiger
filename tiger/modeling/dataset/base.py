@@ -2,55 +2,13 @@ import json
 import logging
 import os
 
-from .samplers import NextItemPredictionTrainSampler, NextItemPredictionEvalSampler, LastItemPredictionTrainSampler, \
-    LastItemPredictionEvalSampler
+from .samplers import create_samplers
 
 logger = logging.getLogger(__name__)
 
 
 class BaseDataset:
     def get_samplers(self):
-        raise NotImplementedError
-
-
-def create_samplers(config, train_dataset, validation_dataset, test_dataset, num_users, num_items):
-    if config['type'] == "next_item_prediction":
-        return (
-            NextItemPredictionTrainSampler.create_from_config(
-                dataset=train_dataset,
-                num_users=num_users,
-                num_items=num_items
-            ),
-            NextItemPredictionEvalSampler.create_from_config(
-                dataset=validation_dataset,
-                num_users=num_users,
-                num_items=num_items
-            ),
-            NextItemPredictionEvalSampler.create_from_config(
-                dataset=test_dataset,
-                num_users=num_users,
-                num_items=num_items
-            )
-        )
-    elif config['type'] == "last_item_prediction":
-        return (
-            LastItemPredictionTrainSampler.create_from_config(
-                dataset=train_dataset,
-                num_users=num_users,
-                num_items=num_items
-            ),
-            LastItemPredictionEvalSampler.create_from_config(
-                dataset=validation_dataset,
-                num_users=num_users,
-                num_items=num_items
-            ),
-            LastItemPredictionEvalSampler.create_from_config(
-                dataset=test_dataset,
-                num_users=num_users,
-                num_items=num_items
-            )
-        )
-    else:
         raise NotImplementedError
 
 
@@ -125,12 +83,11 @@ class ScientificDataset(BaseDataset):
         ))
 
         train_sampler, validation_sampler, test_sampler = create_samplers(
-            config=config['samplers'],
+            prediction_type=config['samplers']['type'],
             train_dataset=train_dataset,
             validation_dataset=validation_dataset,
-            test_dataset=test_dataset,
-            num_users=max_user_id,
-            num_items=max_item_id)
+            test_dataset=test_dataset
+        )
 
         return cls(
             train_sampler=train_sampler,
@@ -257,12 +214,11 @@ class ScientificFullDataset(ScientificDataset):
         )
 
         train_sampler, validation_sampler, test_sampler = create_samplers(
-            config=config['samplers'],
+            prediction_type=config['samplers']['type'],
             train_dataset=train_dataset,
             validation_dataset=validation_dataset,
-            test_dataset=test_dataset,
-            num_users=max_user_id,
-            num_items=max_item_id)
+            test_dataset=test_dataset
+        )
 
         return cls(
             train_sampler=train_sampler,
