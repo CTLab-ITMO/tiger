@@ -5,7 +5,7 @@ import numpy as np
 import torch
 
 from .. import utils
-from ..metric import BaseMetric, StatefullMetric
+from ..metric import StatefullMetric
 
 logger = utils.create_logger(name=__name__)
 
@@ -54,19 +54,6 @@ class MetricCallback(BaseCallback):
         self._loss_prefix = loss_prefix
         self._metrics = metrics if metrics is not None else {}
 
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        return cls(
-            model=kwargs['model'],
-            train_dataloader=kwargs['train_dataloader'],
-            validation_dataloader=kwargs['validation_dataloader'],
-            eval_dataloader=kwargs['eval_dataloader'],
-            optimizer=kwargs['optimizer'],
-            on_step=config['on_step'],
-            metrics=config.get('metrics', None),
-            loss_prefix=config['loss_prefix']
-        )
-
     def __call__(self, inputs, step_num):
         if step_num % self._on_step == 0:
             for metric_name, metric_function in self._metrics.items():
@@ -114,19 +101,6 @@ class CheckpointCallback(BaseCallback):
         else:
             self._save_path.mkdir(parents=True, exist_ok=True)
 
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        return cls(
-            model=kwargs['model'],
-            train_dataloader=kwargs['train_dataloader'],
-            validation_dataloader=kwargs['validation_dataloader'],
-            eval_dataloader=kwargs['eval_dataloader'],
-            optimizer=kwargs['optimizer'],
-            on_step=config['on_step'],
-            save_path=config['save_path'],
-            model_name=config['model_name']
-        )
-
     def __call__(self, inputs, step_num):
         if step_num % self._on_step == 0:
             logger.debug('Saving model state on step {}...'.format(step_num))
@@ -168,25 +142,6 @@ class InferenceCallback(BaseCallback):
         self._pred_prefix = pred_prefix
         self._labels_prefix = labels_prefix
         self._loss_prefix = loss_prefix
-
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        metrics = {
-            metric_name: BaseMetric.create_from_config(metric_cfg, **kwargs)
-            for metric_name, metric_cfg in config['metrics'].items()
-        }
-
-        return cls(
-            model=kwargs['model'],
-            train_dataloader=kwargs['train_dataloader'],
-            validation_dataloader=kwargs['validation_dataloader'],
-            eval_dataloader=kwargs['eval_dataloader'],
-            optimizer=kwargs['optimizer'],
-            on_step=config['on_step'],
-            metrics=metrics,
-            pred_prefix=config['pred_prefix'],
-            labels_prefix=config['labels_prefix']
-        )
 
     def __call__(self, inputs, step_num):
         if step_num % self._on_step == 0:  # TODO Add time monitoring
@@ -242,26 +197,6 @@ class InferenceCallback(BaseCallback):
 
 
 class ValidationCallback(InferenceCallback):
-
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        metrics = {
-            metric_name: BaseMetric.create_from_config(metric_cfg, **kwargs)
-            for metric_name, metric_cfg in config['metrics'].items()
-        }
-
-        return cls(
-            model=kwargs['model'],
-            train_dataloader=kwargs['train_dataloader'],
-            validation_dataloader=kwargs['validation_dataloader'],
-            eval_dataloader=kwargs['eval_dataloader'],
-            optimizer=kwargs['optimizer'],
-            on_step=config['on_step'],
-            metrics=metrics,
-            pred_prefix=config['pred_prefix'],
-            labels_prefix=config['labels_prefix']
-        )
-
     def _get_dataloader(self):
         return self._validation_dataloader
 
@@ -270,26 +205,6 @@ class ValidationCallback(InferenceCallback):
 
 
 class EvalCallback(InferenceCallback):
-
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        metrics = {
-            metric_name: BaseMetric.create_from_config(metric_cfg, **kwargs)
-            for metric_name, metric_cfg in config['metrics'].items()
-        }
-
-        return cls(
-            model=kwargs['model'],
-            train_dataloader=kwargs['train_dataloader'],
-            validation_dataloader=kwargs['validation_dataloader'],
-            eval_dataloader=kwargs['eval_dataloader'],
-            optimizer=kwargs['optimizer'],
-            on_step=config['on_step'],
-            metrics=metrics,
-            pred_prefix=config['pred_prefix'],
-            labels_prefix=config['labels_prefix']
-        )
-
     def _get_dataloader(self):
         return self._eval_dataloader
 
@@ -315,20 +230,6 @@ class CompositeCallback(BaseCallback):
             optimizer
         )
         self._callbacks = callbacks
-
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        return cls(
-            model=kwargs['model'],
-            train_dataloader=kwargs['train_dataloader'],
-            validation_dataloader=kwargs['validation_dataloader'],
-            eval_dataloader=kwargs['eval_dataloader'],
-            optimizer=kwargs['optimizer'],
-            callbacks=[
-                BaseCallback.create_from_config(cfg, **kwargs)
-                for cfg in config['callbacks']
-            ]
-        )
 
     def __call__(self, inputs, step_num):
         for callback in self._callbacks:
