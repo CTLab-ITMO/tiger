@@ -17,9 +17,6 @@
     "validation": 1536
   },
   "model": {
-    "sequence_prefix": "item",
-    "positive_prefix": "labels",
-    "candidate_prefix": "candidates",
     "embedding_dim": 64,
     "num_heads": 2,
     "num_layers": 2,

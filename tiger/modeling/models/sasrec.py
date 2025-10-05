@@ -5,8 +5,6 @@ from ..models import SequentialTorchModel
 class SasRecModel(SequentialTorchModel):
     def __init__(
             self,
-            sequence_prefix,
-            positive_prefix,
             num_items,
             max_sequence_length,
             embedding_dim,
@@ -29,21 +27,18 @@ class SasRecModel(SequentialTorchModel):
             activation=activation,
             layer_norm_eps=layer_norm_eps
         )
-        self._sequence_prefix = sequence_prefix
-        self._positive_prefix = positive_prefix
-
         self._init_weights(initializer_range)
 
     def forward(self, inputs):
-        all_sample_events = inputs['{}.ids'.format(self._sequence_prefix)]  # (all_batch_events)
-        all_sample_lengths = inputs['{}.length'.format(self._sequence_prefix)]  # (batch_size)
+        all_sample_events = inputs["item.ids"]  # (all_batch_events)
+        all_sample_lengths = inputs["item.length"]  # (batch_size)
 
         embeddings, mask = self._apply_sequential_encoder(
             all_sample_events, all_sample_lengths
         )  # (batch_size, seq_len, embedding_dim), (batch_size, seq_len)
 
         if self.training:  # training mode
-            all_positive_sample_events = inputs['{}.ids'.format(self._positive_prefix)]  # (all_batch_events)
+            all_positive_sample_events = inputs["labels.ids"]  # (all_batch_events)
 
             all_sample_embeddings = embeddings[mask]  # (all_batch_events, embedding_dim)
 
@@ -104,8 +99,6 @@ class SasRecModel(SequentialTorchModel):
     @classmethod
     def create_from_config(cls, config, **kwargs):
         return cls(
-            sequence_prefix=config['sequence_prefix'],
-            positive_prefix=config['positive_prefix'],
             num_items=kwargs['num_items'],
             max_sequence_length=kwargs['max_sequence_length'],
             embedding_dim=config['embedding_dim'],
