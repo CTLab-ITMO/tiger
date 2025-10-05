@@ -6,7 +6,6 @@ import torch
 from torch.utils.data import DataLoader
 
 from modeling import utils
-from modeling.callbacks import CompositeCallback
 from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
 from modeling.dataloader import BasicBatchProcessor
 from modeling.dataset import ScientificDataset
@@ -34,7 +33,8 @@ def create_ranking_metrics(dataset):
     }
 
 
-def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None, step_cnt=None, best_metric=None,
+def train(dataloader, metric_callback, validation_callback, eval_callback, model, optimizer, loss_function,
+          epoch_cnt=None, step_cnt=None, best_metric=None,
           epochs_threshold=None):
     step_num = 0
     epoch_num = 0
@@ -63,7 +63,11 @@ def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None,
             loss = loss_function(batch_)
 
             optimizer.step(loss)
-            callback(batch_, step_num)
+
+            metric_callback(batch_, step_num)
+            validation_callback(batch_, step_num)
+            eval_callback(batch_, step_num)
+
             step_num += 1
 
             if best_metric is None:
@@ -142,48 +146,43 @@ def main():
         clip_grad_threshold=config.get('clip_grad_threshold', None)
     )
 
-    callback = CompositeCallback(
-        callbacks=[
-            # Метрики для тренировки (логирование каждый шаг)
-            MetricCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=1,
-                metrics=None,  # Только loss
-                loss_prefix="loss"
-            ),
+    metric_callback = MetricCallback(
+        model=model,
+        train_dataloader=train_dataloader,
+        validation_dataloader=validation_dataloader,
+        eval_dataloader=eval_dataloader,
+        optimizer=optimizer,
+        on_step=1,
+        metrics=None,  # Только loss
+        loss_prefix="loss"
+    )
 
-            # Валидация каждые 64 шага
-            ValidationCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=64,
-                metrics=create_ranking_metrics(dataset),
-                pred_prefix="predictions",
-                labels_prefix="labels",
-                loss_prefix=None
-            ),
+    # Валидация каждые 64 шага
+    validation_callback = ValidationCallback(
+        model=model,
+        train_dataloader=train_dataloader,
+        validation_dataloader=validation_dataloader,
+        eval_dataloader=eval_dataloader,
+        optimizer=optimizer,
+        on_step=64,
+        metrics=create_ranking_metrics(dataset),
+        pred_prefix="predictions",
+        labels_prefix="labels",
+        loss_prefix=None
+    )
 
-            # Финальная оценка каждые 256 шагов
-            EvalCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=256,
-                metrics=create_ranking_metrics(dataset),
-                pred_prefix="predictions",
-                labels_prefix="labels",
-                loss_prefix=None
-            )
-        ]
+    # Финальная оценка каждые 256 шагов
+    eval_callback = EvalCallback(
+        model=model,
+        train_dataloader=train_dataloader,
+        validation_dataloader=validation_dataloader,
+        eval_dataloader=eval_dataloader,
+        optimizer=optimizer,
+        on_step=256,
+        metrics=create_ranking_metrics(dataset),
+        pred_prefix="predictions",
+        labels_prefix="labels",
+        loss_prefix=None
     )
 
     # TODO add verbose option for all callbacks, multiple optimizer options (???)
@@ -193,16 +192,17 @@ def main():
     # Train process
     _ = train(
         dataloader=train_dataloader,
+        metric_callback=metric_callback,
+        validation_callback=validation_callback,
+        eval_callback=eval_callback,
         model=model,
         optimizer=optimizer,
         loss_function=loss_function,
-        callback=callback,
         epoch_cnt=config.get('train_epochs_num'),
         step_cnt=config.get('train_steps_num'),
         best_metric=config.get('best_metric'),
-        epochs_threshold=config.get('early_stopping_threshold', 40)
+        epochs_threshold=config.get('early_stopping_threshold', 40),
     )
-
     logger.debug('Saving model...')
     ckpt_dir = f"../checkpoints/{config['experiment_name']}"
     os.makedirs(ckpt_dir, exist_ok=True)
