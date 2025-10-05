@@ -7,13 +7,7 @@ from .samplers import create_samplers
 logger = logging.getLogger(__name__)
 
 
-class BaseDataset:
-    def get_samplers(self):
-        raise NotImplementedError
-
-
-class ScientificDataset(BaseDataset):
-
+class ScientificDataset:
     def __init__(
             self,
             train_sampler,
@@ -211,37 +205,6 @@ class ScientificFullDataset(ScientificDataset):
             num_users=max_user_id,
             num_items=max_item_id,
             max_sequence_length=max_sequence_length,
-        )
-
-
-class LetterDataset(ScientificDataset):
-    @classmethod
-    def create_from_config(cls, config):
-        user_interactions_path = os.path.join(config["letter_inter_json"])
-        with open(user_interactions_path, "r") as f:
-            user_interactions = json.load(f)
-
-        dir_path = os.path.join(config["path_to_data_dir"], config["name"])
-
-        os.makedirs(dir_path, exist_ok=True)
-        dataset_path = os.path.join(dir_path, "all_data.txt")
-
-        logger.info(f"Saving data to {dataset_path}")
-
-        with open(dataset_path, "w") as f:
-            for user_id, item_ids in user_interactions.items():
-                items_repr = map(str, item_ids)
-                f.write(f"{user_id} {' '.join(items_repr)}\n")
-
-        dataset = ScientificDataset.create_from_config(config)
-
-        return cls(
-            train_sampler=dataset._train_sampler,
-            validation_sampler=dataset._validation_sampler,
-            test_sampler=dataset._test_sampler,
-            num_users=dataset._num_users,
-            num_items=dataset._num_items,
-            max_sequence_length=dataset._max_sequence_length,
         )
 
 
