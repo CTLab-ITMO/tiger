@@ -150,11 +150,6 @@ def main():
     )
 
     callback = CompositeCallback(
-        model=model,
-        train_dataloader=train_dataloader,
-        validation_dataloader=validation_dataloader,
-        eval_dataloader=eval_dataloader,
-        optimizer=optimizer,
         callbacks=[
             # Метрики для тренировки (логирование каждый шаг)
             MetricCallback(

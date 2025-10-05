@@ -10,27 +10,8 @@ from ..metric import StatefullMetric
 logger = utils.create_logger(name=__name__)
 
 
-class BaseCallback:
 
-    def __init__(
-            self,
-            model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
-            optimizer
-    ):
-        self._model = model
-        self._train_dataloader = train_dataloader
-        self._validation_dataloader = validation_dataloader
-        self._eval_dataloader = eval_dataloader
-        self._optimizer = optimizer
-
-    def __call__(self, inputs, step_num):
-        raise NotImplementedError
-
-
-class MetricCallback(BaseCallback):
+class MetricCallback:
 
     def __init__(
             self,
@@ -43,13 +24,12 @@ class MetricCallback(BaseCallback):
             metrics,
             loss_prefix
     ):
-        super().__init__(
-            model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
-            optimizer
-        )
+        self._model = model
+        self._train_dataloader = train_dataloader
+        self._validation_dataloader = validation_dataloader
+        self._eval_dataloader = eval_dataloader
+        self._optimizer = optimizer
+
         self._on_step = on_step
         self._loss_prefix = loss_prefix
         self._metrics = metrics if metrics is not None else {}
@@ -74,7 +54,7 @@ class MetricCallback(BaseCallback):
             utils.GLOBAL_TENSORBOARD_WRITER.flush()
 
 
-class CheckpointCallback(BaseCallback):
+class CheckpointCallback:
 
     def __init__(
             self,
@@ -87,13 +67,12 @@ class CheckpointCallback(BaseCallback):
             save_path,
             model_name
     ):
-        super().__init__(
-            model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
-            optimizer
-        )
+        self._model = model
+        self._train_dataloader = train_dataloader
+        self._validation_dataloader = validation_dataloader
+        self._eval_dataloader = eval_dataloader
+        self._optimizer = optimizer
+
         self._on_step = on_step
         self._save_path = Path(os.path.join(save_path, model_name))
         if self._save_path.exists():
@@ -115,7 +94,7 @@ class CheckpointCallback(BaseCallback):
             logger.debug('Saving done!')
 
 
-class InferenceCallback(BaseCallback):
+class InferenceCallback:
 
     def __init__(
             self,
@@ -130,13 +109,12 @@ class InferenceCallback(BaseCallback):
             metrics=None,
             loss_prefix=None,
     ):
-        super().__init__(
-            model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
-            optimizer
-        )
+        self._model = model
+        self._train_dataloader = train_dataloader
+        self._validation_dataloader = validation_dataloader
+        self._eval_dataloader = eval_dataloader
+        self._optimizer = optimizer
+
         self._on_step = on_step
         self._metrics = metrics if metrics is not None else {}
         self._pred_prefix = pred_prefix
@@ -212,23 +190,11 @@ class EvalCallback(InferenceCallback):
         return "eval"
 
 
-class CompositeCallback(BaseCallback):
+class CompositeCallback:
     def __init__(
             self,
-            model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
-            optimizer,
             callbacks
     ):
-        super().__init__(
-            model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
-            optimizer
-        )
         self._callbacks = callbacks
 
     def __call__(self, inputs, step_num):
