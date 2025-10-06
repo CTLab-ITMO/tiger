@@ -14,17 +14,11 @@
   "dataloader": {
     "train": {
       "batch_size": 256,
-      "batch_processor": {
-        "letter_index_json": "../data/Beauty/_index.json",
-        "semantic_length": 4
-      }
+      "letter_index_json": "../data/Beauty/_index.json"
     },
     "validation": {
       "batch_size": 1024,
-      "batch_processor": {
-        "letter_index_json": "../data/Beauty/_index.json",
-        "semantic_length": 4
-      }
+      "letter_index_json": "../data/Beauty/_index.json"
     }
   },
   "model": {

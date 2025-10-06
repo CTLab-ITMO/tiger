@@ -41,12 +41,9 @@ class LetterBatchProcessor(BasicBatchProcessor):
             self._mapping_tensor[item_id] = torch.tensor(semantic_ids, dtype=torch.long)
 
     @classmethod
-    def create_from_config(cls, config, **kwargs):
-        mapping_path = config["letter_index_json"]
+    def create_from_config(cls, mapping_path, semantic_length):
         with open(mapping_path, "r") as f:
             mapping = json.load(f)
-
-        semantic_length = config["semantic_length"]
 
         parsed = {}
 
