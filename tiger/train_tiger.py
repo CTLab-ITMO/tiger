@@ -6,8 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from modeling import utils
-from modeling.callbacks import CompositeCallback
-from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
+from modeling.callbacks.base import MetricCallback, InferenceCallback
 from modeling.dataloader import LetterBatchProcessor
 from modeling.dataset import LetterFullDataset
 from modeling.loss import IdentityMapLoss, CompositeLoss
@@ -35,7 +34,8 @@ def create_ranking_metrics(dataset, codebook_size, num_codebooks):
     }
 
 
-def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None, step_cnt=None, best_metric=None):
+def train(dataloader, model, metric_callback, validation_callback, eval_callback,
+          optimizer, loss_function, epoch_cnt=None, step_cnt=None, best_metric=None):
     step_num = 0
     epoch_num = 0
     current_metric = 0
@@ -65,7 +65,11 @@ def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None,
             loss = loss_function(batch_)
 
             optimizer.step(loss)
-            callback(batch_, step_num)
+
+            metric_callback(batch_, step_num)
+            validation_callback(batch_, step_num)
+            eval_callback(batch_, step_num)
+
             step_num += 1
 
             if best_metric is None:
@@ -149,52 +153,39 @@ def main():
         clip_grad_threshold=config.get('clip_grad_threshold', None)
     )
 
-    callback = CompositeCallback(
-        callbacks=[
-            # Метрики для тренировки (логирование каждый шаг)
-            MetricCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=1,
-                metrics=None,  # Только loss
-                loss_prefix="loss"
-            ),
-
-            # Валидация каждые 64 шага
-            ValidationCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=64,
-                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'],
-                                               num_codebooks=4),
-                pred_prefix="predictions",
-                labels_prefix="labels",
-                loss_prefix=None
-            ),
-
-            # Финальная оценка каждые 256 шагов
-            EvalCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=256,
-                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'],
-                                               num_codebooks=4),
-                pred_prefix="predictions",
-                labels_prefix="labels",
-                loss_prefix=None
-            )
-        ]
+    # Метрики для тренировки (логирование каждый шаг)
+    metric_callback = MetricCallback(
+        model=model,
+        optimizer=optimizer,
+        on_step=1,
+        loss_prefix="loss"
     )
 
+    # Валидация каждые 64 шага
+    validation_callback = InferenceCallback(
+        config_name="validation",
+        model=model,
+        dataloader=validation_dataloader,
+        optimizer=optimizer,
+        on_step=64,
+        metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'],
+                                       num_codebooks=4),
+        pred_prefix="predictions",
+        labels_prefix="labels"
+    )
+
+    # Финальная оценка каждые 256 шагов
+    eval_callback = InferenceCallback(
+        config_name="eval",
+        model=model,
+        dataloader=eval_dataloader,
+        optimizer=optimizer,
+        on_step=256,
+        metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'],
+                                       num_codebooks=4),
+        pred_prefix="predictions",
+        labels_prefix="labels"
+    )
     # TODO add verbose option for all callbacks, multiple optimizer options (???)
     # TODO create pre/post callbacks
     logger.debug('Everything is ready for training process!')
@@ -202,10 +193,12 @@ def main():
     # Train process
     _ = train(
         dataloader=train_dataloader,
+        metric_callback=metric_callback,
+        validation_callback=validation_callback,
+        eval_callback=eval_callback,
         model=model,
         optimizer=optimizer,
         loss_function=loss_function,
-        callback=callback,
         epoch_cnt=config.get('train_epochs_num'),
         step_cnt=config.get('train_steps_num'),
         best_metric=config.get('best_metric')

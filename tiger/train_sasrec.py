@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from modeling import utils
-from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
+from modeling.callbacks.base import MetricCallback, InferenceCallback
 from modeling.dataloader import BasicBatchProcessor
 from modeling.dataset import ScientificDataset
 from modeling.loss import SASRecLoss
@@ -148,41 +148,33 @@ def main():
 
     metric_callback = MetricCallback(
         model=model,
-        train_dataloader=train_dataloader,
-        validation_dataloader=validation_dataloader,
-        eval_dataloader=eval_dataloader,
         optimizer=optimizer,
         on_step=1,
-        metrics=None,  # Только loss
         loss_prefix="loss"
     )
 
     # Валидация каждые 64 шага
-    validation_callback = ValidationCallback(
+    validation_callback = InferenceCallback(
+        config_name="validation",
         model=model,
-        train_dataloader=train_dataloader,
-        validation_dataloader=validation_dataloader,
-        eval_dataloader=eval_dataloader,
+        dataloader=validation_dataloader,
         optimizer=optimizer,
         on_step=64,
         metrics=create_ranking_metrics(dataset),
         pred_prefix="predictions",
-        labels_prefix="labels",
-        loss_prefix=None
+        labels_prefix="labels"
     )
 
     # Финальная оценка каждые 256 шагов
-    eval_callback = EvalCallback(
+    eval_callback = InferenceCallback(
+        config_name="eval",
         model=model,
-        train_dataloader=train_dataloader,
-        validation_dataloader=validation_dataloader,
-        eval_dataloader=eval_dataloader,
+        dataloader=eval_dataloader,
         optimizer=optimizer,
         on_step=256,
         metrics=create_ranking_metrics(dataset),
         pred_prefix="predictions",
-        labels_prefix="labels",
-        loss_prefix=None
+        labels_prefix="labels"
     )
 
     # TODO add verbose option for all callbacks, multiple optimizer options (???)

@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-
 import numpy as np
 import torch
 
@@ -10,42 +7,23 @@ from ..metric import StatefullMetric
 logger = utils.create_logger(name=__name__)
 
 
-
 class MetricCallback:
 
     def __init__(
             self,
             model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
             optimizer,
             on_step,
-            metrics,
             loss_prefix
     ):
         self._model = model
-        self._train_dataloader = train_dataloader
-        self._validation_dataloader = validation_dataloader
-        self._eval_dataloader = eval_dataloader
         self._optimizer = optimizer
 
         self._on_step = on_step
         self._loss_prefix = loss_prefix
-        self._metrics = metrics if metrics is not None else {}
 
     def __call__(self, inputs, step_num):
         if step_num % self._on_step == 0:
-            for metric_name, metric_function in self._metrics.items():
-                metric_value = metric_function(
-                    ground_truth=inputs[self._model.schema['ground_truth_prefix']],
-                    predictions=inputs[self._model.schema['predictions_prefix']]
-                )
-                utils.GLOBAL_TENSORBOARD_WRITER.add_scalar(
-                    'train/{}'.format(metric_name),
-                    metric_value,
-                    step_num
-                )
             utils.GLOBAL_TENSORBOARD_WRITER.add_scalar(
                 'train/{}'.format(self._loss_prefix),
                 inputs[self._loss_prefix],
@@ -54,54 +32,13 @@ class MetricCallback:
             utils.GLOBAL_TENSORBOARD_WRITER.flush()
 
 
-class CheckpointCallback:
-
-    def __init__(
-            self,
-            model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
-            optimizer,
-            on_step,
-            save_path,
-            model_name
-    ):
-        self._model = model
-        self._train_dataloader = train_dataloader
-        self._validation_dataloader = validation_dataloader
-        self._eval_dataloader = eval_dataloader
-        self._optimizer = optimizer
-
-        self._on_step = on_step
-        self._save_path = Path(os.path.join(save_path, model_name))
-        if self._save_path.exists():
-            logger.warning('Checkpoint path `{}` is already exists!'.format(self._save_path))
-        else:
-            self._save_path.mkdir(parents=True, exist_ok=True)
-
-    def __call__(self, inputs, step_num):
-        if step_num % self._on_step == 0:
-            logger.debug('Saving model state on step {}...'.format(step_num))
-            torch.save(
-                {
-                    'step_num': step_num,
-                    'model_state_dict': self._model.state_dict(),
-                    'optimizer_state_dict': self._optimizer.state_dict(),
-                },
-                os.path.join(self._save_path, 'checkpoint_{}.pth'.format(step_num))
-            )
-            logger.debug('Saving done!')
-
-
 class InferenceCallback:
 
     def __init__(
             self,
+            config_name,
             model,
-            train_dataloader,
-            validation_dataloader,
-            eval_dataloader,
+            dataloader,
             optimizer,
             on_step,
             pred_prefix,
@@ -109,10 +46,9 @@ class InferenceCallback:
             metrics=None,
             loss_prefix=None,
     ):
+        self.config_name = config_name
         self._model = model
-        self._train_dataloader = train_dataloader
-        self._validation_dataloader = validation_dataloader
-        self._eval_dataloader = eval_dataloader
+        self._dataloader = dataloader
         self._optimizer = optimizer
 
         self._on_step = on_step
@@ -132,7 +68,7 @@ class InferenceCallback:
 
             self._model.eval()
             with torch.no_grad():
-                for batch in self._get_dataloader():
+                for batch in self._dataloader:
 
                     for key, value in batch.items():
                         batch[key] = value.to(utils.DEVICE)
@@ -169,34 +105,3 @@ class InferenceCallback:
 
     def _get_name(self):
         return self.config_name
-
-    def _get_dataloader(self):
-        raise NotImplementedError
-
-
-class ValidationCallback(InferenceCallback):
-    def _get_dataloader(self):
-        return self._validation_dataloader
-
-    def _get_name(self):
-        return "validation"
-
-
-class EvalCallback(InferenceCallback):
-    def _get_dataloader(self):
-        return self._eval_dataloader
-
-    def _get_name(self):
-        return "eval"
-
-
-class CompositeCallback:
-    def __init__(
-            self,
-            callbacks
-    ):
-        self._callbacks = callbacks
-
-    def __call__(self, inputs, step_num):
-        for callback in self._callbacks:
-            callback(inputs, step_num)
