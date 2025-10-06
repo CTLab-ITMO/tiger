@@ -19,8 +19,8 @@ logger = create_logger(name=__name__)
 seed_val = 42
 
 
-def create_ranking_metrics(dataset, codebook_size, num_codebooks):
-    print("Logs codebook size: {}, num codebooks: {}".format(codebook_size, num_codebooks))
+def create_ranking_metrics(codebook_size, num_codebooks, num_items):
+    print("Logs codebook size: {}, num codebooks: {}, num items: {}".format(codebook_size, num_codebooks, num_items))
     return {
         "ndcg@5": NDCGSemanticMetric(5, codebook_size, num_codebooks),
         "ndcg@10": NDCGSemanticMetric(10, codebook_size, num_codebooks),
@@ -28,9 +28,9 @@ def create_ranking_metrics(dataset, codebook_size, num_codebooks):
         "recall@5": RecallSemanticMetric(5, codebook_size, num_codebooks),
         "recall@10": RecallSemanticMetric(10, codebook_size, num_codebooks),
         "recall@20": RecallSemanticMetric(20, codebook_size, num_codebooks),
-        "coverage@5": CoverageSemanticMetric(5, codebook_size, num_codebooks, dataset.meta['num_items']),
-        "coverage@10": CoverageSemanticMetric(10, codebook_size, num_codebooks, dataset.meta['num_items']),
-        "coverage@20": CoverageSemanticMetric(20, codebook_size, num_codebooks, dataset.meta['num_items'])
+        "coverage@5": CoverageSemanticMetric(5, codebook_size, num_codebooks, num_items),
+        "coverage@10": CoverageSemanticMetric(10, codebook_size, num_codebooks, num_items),
+        "coverage@20": CoverageSemanticMetric(20, codebook_size, num_codebooks, num_items)
     }
 
 
@@ -124,7 +124,7 @@ def main():
         collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
     )
 
-    model = TigerModelT5.create_from_config(config['model'], **dataset.meta).to(DEVICE)
+    model = TigerModelT5.create_from_config(config['model']).to(DEVICE)
 
     if 'checkpoint' in config:
         checkpoint_path = os.path.join('../checkpoints', f'{config["checkpoint"]}.pth')
@@ -165,7 +165,7 @@ def main():
         model=model,
         dataloader=validation_dataloader,
         on_step=64,
-        metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
+        metrics=create_ranking_metrics(config['model']['codebook_size'], 4, dataset.num_items),
         pred_prefix="predictions",
         labels_prefix="labels"
     )
@@ -176,7 +176,7 @@ def main():
         model=model,
         dataloader=eval_dataloader,
         on_step=256,
-        metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
+        metrics=create_ranking_metrics(config['model']['codebook_size'], 4, dataset.num_items),
         pred_prefix="predictions",
         labels_prefix="labels"
     )

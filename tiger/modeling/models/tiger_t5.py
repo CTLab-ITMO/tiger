@@ -130,7 +130,7 @@ class TigerModelT5(TorchModel):
 
 
     @classmethod
-    def create_from_config(cls, config: Dict, **kwargs):
+    def create_from_config(cls, config):
         return cls(
             sequence_prefix=config["sequence_prefix"],
             positive_prefix=config['positive_prefix'],

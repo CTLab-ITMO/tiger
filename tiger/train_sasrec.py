@@ -19,7 +19,7 @@ logger = create_logger(name=__name__)
 seed_val = 42
 
 
-def create_ranking_metrics(dataset):
+def create_ranking_metrics(num_items):
     return {
         "ndcg@5": NDCGMetric(5),
         "ndcg@10": NDCGMetric(10),
@@ -27,9 +27,9 @@ def create_ranking_metrics(dataset):
         "recall@5": RecallMetric(5),
         "recall@10": RecallMetric(10),
         "recall@20": RecallMetric(20),
-        "coverage@5": CoverageMetric(5, dataset.meta['num_items']),
-        "coverage@10": CoverageMetric(10, dataset.meta['num_items']),
-        "coverage@20": CoverageMetric(20, dataset.meta['num_items'])
+        "coverage@5": CoverageMetric(5, num_items),
+        "coverage@10": CoverageMetric(10, num_items),
+        "coverage@20": CoverageMetric(20, num_items)
     }
 
 
@@ -122,7 +122,7 @@ def main():
         collate_fn=BasicBatchProcessor()
     )
 
-    model = SasRecModel.create_from_config(config['model'], **dataset.meta).to(utils.DEVICE)
+    model = SasRecModel.create_from_config(dataset.num_items, dataset.max_sequence_length, config['model']).to(utils.DEVICE)
 
     if 'checkpoint' in config:
         checkpoint_path = os.path.join('../checkpoints', f'{config["checkpoint"]}.pth')
@@ -157,7 +157,7 @@ def main():
         model=model,
         dataloader=validation_dataloader,
         on_step=64,
-        metrics=create_ranking_metrics(dataset),
+        metrics=create_ranking_metrics(dataset.num_items),
         pred_prefix="predictions",
         labels_prefix="labels"
     )
@@ -168,7 +168,7 @@ def main():
         model=model,
         dataloader=eval_dataloader,
         on_step=256,
-        metrics=create_ranking_metrics(dataset),
+        metrics=create_ranking_metrics(dataset.num_items),
         pred_prefix="predictions",
         labels_prefix="labels"
     )

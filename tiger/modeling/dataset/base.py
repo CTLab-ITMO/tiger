@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-from .samplers import create_samplers
+from .samplers import TrainSampler, EvalSampler
 
 logger = logging.getLogger(__name__)
 
@@ -76,12 +76,9 @@ class ScientificDataset:
             config['name'], (len(train_dataset) + len(test_dataset)) / max_user_id / max_item_id
         ))
 
-        train_sampler, validation_sampler, test_sampler = create_samplers(
-            prediction_type=config['samplers']['type'],
-            train_dataset=train_dataset,
-            validation_dataset=validation_dataset,
-            test_dataset=test_dataset
-        )
+        train_sampler = TrainSampler(train_dataset, config['samplers']['type'])
+        validation_sampler = EvalSampler(validation_dataset)
+        test_sampler = EvalSampler(test_dataset)
 
         return cls(
             train_sampler=train_sampler,
@@ -106,14 +103,6 @@ class ScientificDataset:
     @property
     def max_sequence_length(self):
         return self._max_sequence_length
-
-    @property
-    def meta(self):
-        return {
-            'num_users': self.num_users,
-            'num_items': self.num_items,
-            'max_sequence_length': self.max_sequence_length
-        }
 
 
 class ScientificFullDataset(ScientificDataset):
@@ -191,12 +180,9 @@ class ScientificFullDataset(ScientificDataset):
             )
         )
 
-        train_sampler, validation_sampler, test_sampler = create_samplers(
-            prediction_type=config['samplers']['type'],
-            train_dataset=train_dataset,
-            validation_dataset=validation_dataset,
-            test_dataset=test_dataset
-        )
+        train_sampler = TrainSampler(train_dataset, config['samplers']['type'])
+        validation_sampler = EvalSampler(validation_dataset)
+        test_sampler = EvalSampler(test_dataset)
 
         return cls(
             train_sampler=train_sampler,

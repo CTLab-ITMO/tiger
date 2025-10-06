@@ -69,9 +69,3 @@ class EvalSampler:
             'labels.ids': [next_item],
             'labels.length': 1
         }
-
-
-def create_samplers(prediction_type, train_dataset, validation_dataset, test_dataset):
-    return (TrainSampler(train_dataset, prediction_type),
-            EvalSampler(validation_dataset),
-            EvalSampler(test_dataset))

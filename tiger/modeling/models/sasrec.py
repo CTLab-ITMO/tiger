@@ -97,10 +97,10 @@ class SasRecModel(SequentialTorchModel):
 
 
     @classmethod
-    def create_from_config(cls, config, **kwargs):
+    def create_from_config(cls, num_items, max_sequence_length, config):
         return cls(
-            num_items=kwargs['num_items'],
-            max_sequence_length=kwargs['max_sequence_length'],
+            num_items=num_items,
+            max_sequence_length=max_sequence_length,
             embedding_dim=config['embedding_dim'],
             num_heads=config.get('num_heads', int(config['embedding_dim'] // 64)),
             num_layers=config['num_layers'],
