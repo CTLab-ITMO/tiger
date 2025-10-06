@@ -1,38 +1,7 @@
 import torch
 
 
-class BaseMetric:
-    pass
-
-
-class StatefullMetric(BaseMetric):
-    def reduce(self, values):
-        raise NotImplementedError
-
-
-class StaticMetric(BaseMetric):
-    def __init__(self, name, value):
-        self._name = name
-        self._value = value
-
-    def __call__(self, inputs):
-        inputs[self._name] = self._value
-
-        return inputs
-
-
-class CompositeMetric(BaseMetric):
-
-    def __init__(self, metrics):
-        self._metrics = metrics
-
-    def __call__(self, inputs):
-        for metric in self._metrics:
-            inputs = metric(inputs)
-        return inputs
-
-
-class NDCGMetric(BaseMetric):
+class NDCGMetric:
 
     def __init__(self, k):
         self._k = k
@@ -50,7 +19,7 @@ class NDCGMetric(BaseMetric):
         return dcg.cpu().tolist()
 
 
-class NDCGSemanticMetric(BaseMetric):
+class NDCGSemanticMetric:
 
     def __init__(self, k, codebook_size, num_codebooks):
         self._k = k
@@ -74,7 +43,7 @@ class NDCGSemanticMetric(BaseMetric):
         return dcg.cpu().tolist()
 
 
-class RecallMetric(BaseMetric):
+class RecallMetric:
 
     def __init__(self, k):
         self._k = k
@@ -91,7 +60,7 @@ class RecallMetric(BaseMetric):
         return recall.cpu().tolist()
 
 
-class RecallSemanticMetric(BaseMetric):
+class RecallSemanticMetric:
 
     def __init__(self, k, codebook_size, num_codebooks):
         self._k = k
@@ -113,7 +82,7 @@ class RecallSemanticMetric(BaseMetric):
         return recall.cpu().tolist()
 
 
-class CoverageMetric(StatefullMetric):
+class CoverageMetric:
 
     def __init__(self, k, num_items):
         self._k = k
@@ -127,7 +96,7 @@ class CoverageMetric(StatefullMetric):
         return len(set(values)) / self._num_items
 
 
-class CoverageSemanticMetric(StatefullMetric):
+class CoverageSemanticMetric:
 
     def __init__(self, k, codebook_size, num_codebooks, num_items):
         self._k = k

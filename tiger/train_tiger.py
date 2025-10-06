@@ -6,11 +6,11 @@ import torch
 from torch.utils.data import DataLoader
 
 from modeling import utils
-from modeling.callbacks.base import MetricCallback, InferenceCallback
+from modeling.callbacks import MetricCallback, InferenceCallback
 from modeling.dataloader import LetterBatchProcessor
 from modeling.dataset import LetterFullDataset
 from modeling.loss import IdentityMapLoss, CompositeLoss
-from modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
+from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
 from modeling.models import TigerModelT5
 from modeling.optimizer import BasicOptimizer
 from modeling.utils import parse_args, create_logger, fix_random_seed, DEVICE, TensorboardWriter

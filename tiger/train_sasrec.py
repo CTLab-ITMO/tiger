@@ -6,11 +6,11 @@ import torch
 from torch.utils.data import DataLoader
 
 from modeling import utils
-from modeling.callbacks.base import MetricCallback, InferenceCallback
+from modeling.callbacks import MetricCallback, InferenceCallback
 from modeling.dataloader import BasicBatchProcessor
 from modeling.dataset import ScientificDataset
 from modeling.loss import SASRecLoss
-from modeling.metric.base import NDCGMetric, RecallMetric, CoverageMetric
+from modeling.metric import NDCGMetric, RecallMetric, CoverageMetric
 from modeling.models import SasRecModel
 from modeling.optimizer import BasicOptimizer
 from modeling.utils import parse_args, create_logger, fix_random_seed, TensorboardWriter

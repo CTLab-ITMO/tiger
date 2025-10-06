@@ -1,1 +1,1 @@
-from .base import InferenceCallback
+from .base import MetricCallback, InferenceCallback
