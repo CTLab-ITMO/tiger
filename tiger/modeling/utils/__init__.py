@@ -1,15 +1,31 @@
 import argparse
+import datetime
 import json
 import logging
+import os
 import random
-from pathlib import Path
 
 import numpy as np
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
-from .tensorboards import GLOBAL_TENSORBOARD_WRITER, LOGS_DIR
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+LOGS_DIR = '../tensorboard_logs'
+GLOBAL_TENSORBOARD_WRITER = None
+
+
+class TensorboardWriter(SummaryWriter):
+
+    def __init__(self, experiment_name, use_time=True):
+        self._experiment_name = experiment_name
+        super().__init__(
+            log_dir=os.path.join(LOGS_DIR,
+                                 f'{experiment_name}_{datetime.datetime.now().strftime("%Y-%m-%dT%H:%M" if use_time else "")}')
+        )
+
+    def add_scalar(self, *args, **kwargs):
+        super().add_scalar(*args, **kwargs)
 
 
 def parse_args():

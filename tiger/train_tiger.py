@@ -13,7 +13,7 @@ from modeling.loss import IdentityMapLoss, CompositeLoss
 from modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
 from modeling.models import TigerModelT5
 from modeling.optimizer import BasicOptimizer
-from modeling.utils import parse_args, create_logger, fix_random_seed, tensorboards, DEVICE
+from modeling.utils import parse_args, create_logger, fix_random_seed, DEVICE, TensorboardWriter
 
 logger = create_logger(name=__name__)
 seed_val = 42
@@ -91,7 +91,7 @@ def main():
     fix_random_seed(seed_val)
     config = parse_args()
 
-    utils.GLOBAL_TENSORBOARD_WRITER = tensorboards.TensorboardWriter(config['experiment_name'])
+    utils.GLOBAL_TENSORBOARD_WRITER = TensorboardWriter(config['experiment_name'])
 
     logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
     logger.debug('Current DEVICE: {}'.format(DEVICE))
