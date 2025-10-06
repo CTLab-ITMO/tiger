@@ -1,4 +1,5 @@
 import torch
+
 from ..models import SequentialTorchModel
 
 
@@ -106,5 +107,7 @@ class SasRecModel(SequentialTorchModel):
             num_layers=config['num_layers'],
             dim_feedforward=config.get('dim_feedforward', 4 * config['embedding_dim']),
             dropout=config.get('dropout', 0.0),
-            initializer_range=config.get('initializer_range', 0.02)
+            activation=config.get('activation', 'relu'),
+            layer_norm_eps=config.get('layer_norm_eps', 1e-9),
+            initializer_range=config.get('initializer_range', 0.02),
         )
