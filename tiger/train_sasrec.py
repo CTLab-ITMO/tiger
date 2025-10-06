@@ -214,13 +214,6 @@ def main():
     torch.save(model.state_dict(), checkpoint_path)
     logger.debug('Saved model as {}'.format(checkpoint_path))
 
-    item_embeds_path = '{}/{}_item_embeddings.pt'.format(
-        ckpt_dir,
-        config['experiment_name']
-    )
-    utils.save_sasrec_embeds(model, item_embeds_path)
-    logger.debug('Saved item embeddings to {}'.format(item_embeds_path))
-
 
 if __name__ == '__main__':
     main()

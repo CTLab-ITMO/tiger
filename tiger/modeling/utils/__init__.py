@@ -41,12 +41,6 @@ def fix_random_seed(seed):
     torch.cuda.manual_seed_all(seed)
 
 
-def maybe_to_list(values):
-    if not isinstance(values, list):
-        values = [values]
-    return values
-
-
 def get_activation_function(name, **kwargs):
     if name == 'relu':
         return torch.nn.ReLU()
@@ -117,44 +111,3 @@ def create_masked_tensor(data, lengths, is_tiger=False):
     padded_tensor[mask] = data
 
     return padded_tensor, mask
-
-def save_sasrec_embeds(model, output_path):
-    with torch.no_grad():
-        item_embeddings = model._item_embeddings.weight.data.cpu().numpy()[1:]  # (num_items, embedding_dim)
-        tensor_embeddings = torch.from_numpy(item_embeddings).float()
-    assert tensor_embeddings.shape == (model._num_items, model._embedding_dim)
-    torch.save(tensor_embeddings, output_path)
-
-
-def generate_inter_json(user_interactions_path, output_dir):
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    inter_dict = {}
-
-    with open(user_interactions_path, "r", encoding='utf-8') as f:
-        for line in f:
-            parts = line.strip().split()
-            if not parts:
-                continue
-
-            user_id_str = int(parts[0])
-            item_id_strs = parts[1:]
-            # Преобразуем все item_id к int
-            user_items = []
-            for item_str in item_id_strs:
-                try:
-                    user_items.append(int(item_str) - 1)
-                except ValueError:
-                    continue
-
-            if user_items:
-                inter_dict[user_id_str - 1] = user_items
-
-    inter_path = output_path / "all-data-inter.json"
-    with open(inter_path, "w", encoding='utf-8') as f:
-        json.dump(inter_dict, f, indent=4, ensure_ascii=False)
-
-    print(f"inter.json path: {inter_path}")
-    print(f"Total users count: {len(inter_dict)}")
-    return inter_path
