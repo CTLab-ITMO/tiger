@@ -76,7 +76,7 @@ class ScientificDataset:
             config['name'], (len(train_dataset) + len(test_dataset)) / max_user_id / max_item_id
         ))
 
-        train_sampler = TrainSampler(train_dataset, config['samplers']['type'])
+        train_sampler = TrainSampler(train_dataset, config['sampler_type'])
         validation_sampler = EvalSampler(validation_dataset)
         test_sampler = EvalSampler(test_dataset)
 
@@ -180,7 +180,7 @@ class ScientificFullDataset(ScientificDataset):
             )
         )
 
-        train_sampler = TrainSampler(train_dataset, config['samplers']['type'])
+        train_sampler = TrainSampler(train_dataset, config['sampler_type'])
         validation_sampler = EvalSampler(validation_dataset)
         test_sampler = EvalSampler(test_dataset)
 

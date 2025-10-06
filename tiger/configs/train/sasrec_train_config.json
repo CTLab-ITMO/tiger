@@ -7,10 +7,7 @@
     "path_to_data_dir": "../data",
     "name": "Beauty",
     "max_sequence_length": 50,
-    "samplers": {
-      "type": "next_item_prediction",
-      "num_negatives_val": 100
-    }
+    "sampler_type": "next_item_prediction"
   },
   "dataloader_batch_size": {
     "train": 2048,

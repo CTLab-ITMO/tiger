@@ -7,10 +7,7 @@
     "path_to_data_dir": "../data",
     "name": "Beauty",
     "max_sequence_length": 20,
-    "samplers": {
-      "type": "last_item_prediction",
-      "negative_sampler_type": "random"
-    },
+    "sampler_type": "last_item_prediction",
     "letter_inter_json": "../data/Beauty/_inter.json"
   },
   "letter_index_json": "../data/Beauty/_index.json",
