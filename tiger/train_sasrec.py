@@ -96,6 +96,9 @@ def main():
 
     dataset = ScientificDataset.create_from_config(config['dataset'])
 
+    dataset_num_items = dataset.num_items
+    dataset_max_sequence_length = dataset.max_sequence_length
+
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
     train_dataloader = DataLoader(
@@ -122,7 +125,7 @@ def main():
         collate_fn=BasicBatchProcessor()
     )
 
-    model = SasRecModel.create_from_config(dataset.num_items, dataset.max_sequence_length, config['model']).to(utils.DEVICE)
+    model = SasRecModel.create_from_config(dataset_num_items, dataset_max_sequence_length, config['model']).to(utils.DEVICE)
 
     if 'checkpoint' in config:
         checkpoint_path = os.path.join('../checkpoints', f'{config["checkpoint"]}.pth')
@@ -157,7 +160,7 @@ def main():
         model=model,
         dataloader=validation_dataloader,
         on_step=64,
-        metrics=create_ranking_metrics(dataset.num_items),
+        metrics=create_ranking_metrics(dataset_num_items),
         pred_prefix="predictions",
         labels_prefix="labels"
     )
@@ -168,7 +171,7 @@ def main():
         model=model,
         dataloader=eval_dataloader,
         on_step=256,
-        metrics=create_ranking_metrics(dataset.num_items),
+        metrics=create_ranking_metrics(dataset_num_items),
         pred_prefix="predictions",
         labels_prefix="labels"
     )

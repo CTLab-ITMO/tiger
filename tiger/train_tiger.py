@@ -9,7 +9,7 @@ from modeling import utils
 from modeling.callbacks import MetricCallback, InferenceCallback
 from modeling.dataloader import LetterBatchProcessor
 from modeling.dataset import LetterFullDataset
-from modeling.loss import IdentityMapLoss, CompositeLoss
+from modeling.loss import IdentityMapLoss
 from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
 from modeling.models import TigerModelT5
 from modeling.optimizer import BasicOptimizer
@@ -19,7 +19,7 @@ logger = create_logger(name=__name__)
 seed_val = 42
 
 
-def create_ranking_metrics(codebook_size, num_codebooks, num_items):
+def create_ranking_metrics(num_items, codebook_size, num_codebooks=4):
     print("Logs codebook size: {}, num codebooks: {}, num items: {}".format(codebook_size, num_codebooks, num_items))
     return {
         "ndcg@5": NDCGSemanticMetric(5, codebook_size, num_codebooks),
@@ -98,6 +98,8 @@ def main():
 
     dataset = LetterFullDataset.create_from_config(config['dataset'])
 
+    dataset_num_items = dataset.num_items
+
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
     train_dataloader = DataLoader(
@@ -136,14 +138,8 @@ def main():
     total_params = sum(p.numel() for p in model.parameters())
     print(f"Total model parameters: {total_params}")
 
-    loss_function = CompositeLoss(
-        losses=[
-            IdentityMapLoss(
-                predictions_prefix="loss",
-                output_prefix="loss"
-            )
-        ],
-        weights=[1.0],
+    loss_function = IdentityMapLoss(
+        predictions_prefix="loss",
         output_prefix="loss"
     )
 
@@ -165,7 +161,7 @@ def main():
         model=model,
         dataloader=validation_dataloader,
         on_step=64,
-        metrics=create_ranking_metrics(config['model']['codebook_size'], 4, dataset.num_items),
+        metrics=create_ranking_metrics(dataset_num_items, config['model']['codebook_size'], 4),
         pred_prefix="predictions",
         labels_prefix="labels"
     )
@@ -176,7 +172,7 @@ def main():
         model=model,
         dataloader=eval_dataloader,
         on_step=256,
-        metrics=create_ranking_metrics(config['model']['codebook_size'], 4, dataset.num_items),
+        metrics=create_ranking_metrics(dataset_num_items, config['model']['codebook_size'], 4),
         pred_prefix="predictions",
         labels_prefix="labels"
     )
