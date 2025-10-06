@@ -2,23 +2,14 @@ import numpy as np
 import torch
 
 from .. import utils
-from ..metric import StatefullMetric
+from ..metric import CoverageMetric
 
 logger = utils.create_logger(name=__name__)
 
 
 class MetricCallback:
 
-    def __init__(
-            self,
-            model,
-            optimizer,
-            on_step,
-            loss_prefix
-    ):
-        self._model = model
-        self._optimizer = optimizer
-
+    def __init__(self, on_step, loss_prefix):
         self._on_step = on_step
         self._loss_prefix = loss_prefix
 
@@ -39,23 +30,19 @@ class InferenceCallback:
             config_name,
             model,
             dataloader,
-            optimizer,
             on_step,
             pred_prefix,
             labels_prefix,
             metrics=None,
-            loss_prefix=None,
     ):
         self.config_name = config_name
         self._model = model
         self._dataloader = dataloader
-        self._optimizer = optimizer
 
         self._on_step = on_step
         self._metrics = metrics if metrics is not None else {}
         self._pred_prefix = pred_prefix
         self._labels_prefix = labels_prefix
-        self._loss_prefix = loss_prefix
 
     def __call__(self, inputs, step_num):
         if step_num % self._on_step == 0:  # TODO Add time monitoring
@@ -63,8 +50,6 @@ class InferenceCallback:
             running_params = {}
             for metric_name, metric_function in self._metrics.items():
                 running_params[metric_name] = []
-            if self._loss_prefix is not None:
-                running_params[self._loss_prefix] = []
 
             self._model.eval()
             with torch.no_grad():
@@ -75,9 +60,6 @@ class InferenceCallback:
 
                     batch.update(self._model(batch))
 
-                    # for key, values in batch.items():
-                    #     batch[key] = values.cpu()
-
                     for metric_name, metric_function in self._metrics.items():
                         running_params[metric_name].extend(metric_function(
                             inputs=batch,
@@ -85,11 +67,8 @@ class InferenceCallback:
                             labels_prefix=self._labels_prefix,
                         ))
 
-                    if self._loss_prefix is not None:
-                        running_params[self._loss_prefix] += batch[self._loss_prefix].item()
-
             for metric_name, metric_function in self._metrics.items():
-                if isinstance(metric_function, StatefullMetric):
+                if isinstance(metric_function, CoverageMetric):
                     running_params[metric_name] = metric_function.reduce(running_params[metric_name])
 
             for label, value in running_params.items():

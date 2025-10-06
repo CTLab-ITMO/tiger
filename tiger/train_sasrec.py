@@ -147,8 +147,6 @@ def main():
     )
 
     metric_callback = MetricCallback(
-        model=model,
-        optimizer=optimizer,
         on_step=1,
         loss_prefix="loss"
     )
@@ -158,7 +156,6 @@ def main():
         config_name="validation",
         model=model,
         dataloader=validation_dataloader,
-        optimizer=optimizer,
         on_step=64,
         metrics=create_ranking_metrics(dataset),
         pred_prefix="predictions",
@@ -170,7 +167,6 @@ def main():
         config_name="eval",
         model=model,
         dataloader=eval_dataloader,
-        optimizer=optimizer,
         on_step=256,
         metrics=create_ranking_metrics(dataset),
         pred_prefix="predictions",

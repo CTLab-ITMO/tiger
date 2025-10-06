@@ -96,13 +96,12 @@ class CoverageMetric:
         return len(set(values)) / self._num_items
 
 
-class CoverageSemanticMetric:
+class CoverageSemanticMetric(CoverageMetric):
 
     def __init__(self, k, codebook_size, num_codebooks, num_items):
-        self._k = k
+        super().__init__(k, num_items)
         self._codebook_size = codebook_size
         self._num_codebooks = num_codebooks
-        self._num_items = num_items
 
     def __call__(self, inputs, pred_prefix, labels_prefix):
         predictions = inputs[pred_prefix].long()

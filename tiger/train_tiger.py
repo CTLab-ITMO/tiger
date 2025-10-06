@@ -155,8 +155,6 @@ def main():
 
     # Метрики для тренировки (логирование каждый шаг)
     metric_callback = MetricCallback(
-        model=model,
-        optimizer=optimizer,
         on_step=1,
         loss_prefix="loss"
     )
@@ -166,10 +164,8 @@ def main():
         config_name="validation",
         model=model,
         dataloader=validation_dataloader,
-        optimizer=optimizer,
         on_step=64,
-        metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'],
-                                       num_codebooks=4),
+        metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
         pred_prefix="predictions",
         labels_prefix="labels"
     )
@@ -179,10 +175,8 @@ def main():
         config_name="eval",
         model=model,
         dataloader=eval_dataloader,
-        optimizer=optimizer,
         on_step=256,
-        metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'],
-                                       num_codebooks=4),
+        metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
         pred_prefix="predictions",
         labels_prefix="labels"
     )
