@@ -11,15 +11,10 @@
     },
     "letter_inter_json": "../data/Beauty/_inter.json"
   },
-  "dataloader": {
-    "train": {
-      "batch_size": 256,
-      "letter_index_json": "../data/Beauty/_index.json"
-    },
-    "validation": {
-      "batch_size": 1024,
-      "letter_index_json": "../data/Beauty/_index.json"
-    }
+  "letter_index_json": "../data/Beauty/_index.json",
+  "dataloader_batch_size": {
+    "train": 256,
+    "validation": 1024
   },
   "model": {
     "sequence_prefix": "item",

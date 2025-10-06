@@ -104,7 +104,7 @@ def main():
 
     train_dataloader = DataLoader(
         dataset=train_sampler,
-        batch_size=config['dataloader']['train']["batch_size"],
+        batch_size=config["dataloader_batch_size"]["train"],
         drop_last=True,
         shuffle=True,
         collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['train']["letter_index_json"], 4)
@@ -112,18 +112,18 @@ def main():
 
     validation_dataloader = DataLoader(
         dataset=validation_sampler,
-        batch_size=config['dataloader']['validation']["batch_size"],
+        batch_size=config["dataloader_batch_size"]["validation"],
         drop_last=False,
         shuffle=False,
-        collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["letter_index_json"], 4)
+        collate_fn=LetterBatchProcessor.create_from_config(config["letter_index_json"], 4)
     )
 
     eval_dataloader = DataLoader(
         dataset=test_sampler,
-        batch_size=config['dataloader']['validation']["batch_size"],
+        batch_size=config["dataloader_batch_size"]["validation"],
         drop_last=False,
         shuffle=False,
-        collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["letter_index_json"], 4)
+        collate_fn=LetterBatchProcessor.create_from_config(config["letter_index_json"], 4)
     )
 
     model = TigerModelT5.create_from_config(config['model']).to(DEVICE)

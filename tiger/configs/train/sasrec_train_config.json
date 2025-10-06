@@ -27,7 +27,7 @@
     "initializer_range": 0.02
   },
   "optimizer": {
-      "type": "adam",
-      "lr": 3e-4
-    }
+    "type": "adam",
+    "lr": 3e-4
+  }
 }
