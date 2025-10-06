@@ -34,14 +34,12 @@ def create_ranking_metrics(num_items, codebook_size, num_codebooks=4):
     }
 
 
-def train(dataloader, model, metric_callback, validation_callback, eval_callback,
-          optimizer, loss_function, epoch_cnt=None, step_cnt=None, best_metric=None):
+def train(dataloader, model, metric_callback, validation_callback, eval_callback, optimizer, loss_function,
+          epoch_cnt=None, step_cnt=None, best_metric=None,
+          epochs_threshold=40):
     step_num = 0
     epoch_num = 0
     current_metric = 0
-
-    epochs_threshold = 40
-
     best_epoch = 0
     best_checkpoint = None
 
@@ -183,15 +181,16 @@ def main():
     # Train process
     _ = train(
         dataloader=train_dataloader,
+        model=model,
         metric_callback=metric_callback,
         validation_callback=validation_callback,
         eval_callback=eval_callback,
-        model=model,
         optimizer=optimizer,
         loss_function=loss_function,
         epoch_cnt=config.get('train_epochs_num'),
         step_cnt=config.get('train_steps_num'),
-        best_metric=config.get('best_metric')
+        best_metric=config.get('best_metric'),
+        epochs_threshold=config.get('early_stopping_threshold', 40),
     )
 
     logger.debug('Saving model...')

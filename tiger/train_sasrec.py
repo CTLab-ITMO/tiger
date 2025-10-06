@@ -33,7 +33,7 @@ def create_ranking_metrics(num_items):
     }
 
 
-def train(dataloader, metric_callback, validation_callback, eval_callback, model, optimizer, loss_function,
+def train(dataloader, model, metric_callback, validation_callback, eval_callback, optimizer, loss_function,
           epoch_cnt=None, step_cnt=None, best_metric=None,
           epochs_threshold=None):
     step_num = 0
@@ -183,10 +183,10 @@ def main():
     # Train process
     _ = train(
         dataloader=train_dataloader,
+        model=model,
         metric_callback=metric_callback,
         validation_callback=validation_callback,
         eval_callback=eval_callback,
-        model=model,
         optimizer=optimizer,
         loss_function=loss_function,
         epoch_cnt=config.get('train_epochs_num'),

@@ -1,6 +1,8 @@
 {
   "experiment_name": "tiger_beauty_t5_rqkmeans_letter_format_fixed_v2_init_open_source",
   "best_metric": "validation/ndcg@20",
+  "train_epochs_num": 200,
+  "early_stopping_threshold": 40,
   "dataset": {
     "path_to_data_dir": "../data",
     "name": "Beauty",
