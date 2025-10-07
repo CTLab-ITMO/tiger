@@ -1,16 +1,14 @@
 {
-  "experiment_name": "tiger_beauty_t5_rqkmeans_letter_format_fixed_v2_init_open_source",
+  "experiment_name": "tiger_beauty_t5_rqkmeans_letter_format_fixed_v2_init_open_source_ref_params",
   "best_metric": "validation/ndcg@20",
-  "train_epochs_num": 200,
-  "early_stopping_threshold": 40,
   "dataset": {
     "path_to_data_dir": "../data",
     "name": "Beauty",
     "max_sequence_length": 20,
     "sampler_type": "last_item_prediction",
-    "letter_inter_json": "../data/Beauty/_inter.json"
+    "letter_inter_json": "../data/Beauty/inter.json"
   },
-  "letter_index_json": "../data/Beauty/_index.json",
+  "letter_index_json": "../data/Beauty/index.json",
   "dataloader_batch_size": {
     "train": 256,
     "validation": 1024
