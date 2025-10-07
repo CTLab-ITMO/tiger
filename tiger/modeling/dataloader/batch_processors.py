@@ -30,7 +30,7 @@ class BasicBatchProcessor:
 
 class LetterBatchProcessor(BasicBatchProcessor):
 
-    def __init__(self, mapping: dict[int, list[int]], semantic_length: int):
+    def __init__(self, mapping, semantic_length):
         self._prefixes = ['item', 'labels', 'positive', 'negative']
         self._semantic_length = semantic_length
         self._mapping = mapping
