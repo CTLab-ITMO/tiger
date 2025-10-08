@@ -110,7 +110,7 @@ class TigerModelT5(TorchModel):
                 attention_mask=attention_mask,
                 num_beams=50,
                 num_return_sequences=20,
-                max_length=5,
+                max_length=self._sem_id_len + 1,
                 decoder_start_token_id=self.config.decoder_start_token_id,
                 eos_token_id=self.config.eos_token_id,
                 pad_token_id=self.config.pad_token_id,
@@ -118,5 +118,5 @@ class TigerModelT5(TorchModel):
                 early_stopping=False
             )
             return {
-                'predictions': output[:, 1:].reshape(-1, 20, 5 - 1)
+                'predictions': output[:, 1:].reshape(-1, 20, self._sem_id_len)
             }
