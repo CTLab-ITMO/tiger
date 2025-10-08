@@ -3,7 +3,7 @@
   "dataset": {
     "inter_json_path": "../data/Beauty/inter.json",
     "max_sequence_length": 20,
-    "sampler_type": "next_item_prediction"
+    "sampler_type": "next_item"
   },
   "dataloader": {
     "train_batch_size": 256,

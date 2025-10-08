@@ -1,7 +1,7 @@
 import torch
 from transformers import T5ForConditionalGeneration, T5Config
 
-from base import TorchModel
+from ..models import TorchModel
 
 
 class TigerModelT5(TorchModel):
