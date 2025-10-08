@@ -3,7 +3,7 @@ import os
 
 import torch
 
-from ..callbacks import MetricCallback, InferenceCallback
+from ..trainer import MetricCallback, InferenceCallback
 from ..utils import create_logger, TensorboardWriter, DEVICE
 
 

@@ -11,7 +11,7 @@ from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSe
 from modeling.models import TigerModelT5
 from modeling.optimizer import BasicOptimizer
 from modeling.utils import parse_args, create_logger, fix_random_seed
-from modeling.utils.trainer import Trainer
+from modeling.trainer import Trainer
 
 logger = create_logger(name=__name__)
 seed_val = 42
