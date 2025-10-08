@@ -1,8 +1,8 @@
 {
-  "experiment_name": "tiger_beauty",
+  "experiment_name": "tiger_beauty_kmeans",
   "dataset": {
     "inter_json_path": "../data/Beauty/inter.json",
-    "index_json_path": "../data/Beauty/index.json",
+    "index_json_path": "../data/Beauty/index_kmeans.json",
     "max_sequence_length": 20,
     "sampler_type": "last_item"
   },
