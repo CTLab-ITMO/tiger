@@ -11,8 +11,6 @@
     "validation": 1024
   },
   "model": {
-    "sequence_prefix": "item",
-    "positive_prefix": "labels",
     "embedding_dim": 384,
     "codebook_size": 256,
     "num_positions": 20,
@@ -21,8 +19,6 @@
     "num_decoder_layers": 4,
     "dim_feedforward": 2048,
     "dropout": 0.1,
-    "activation": "relu",
-    "layer_norm_eps": 1e-9,
     "initializer_range": 0.02
   },
   "optimizer": {

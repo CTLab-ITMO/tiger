@@ -1,18 +1,13 @@
-from typing import Dict
-
 import torch
 from transformers import T5ForConditionalGeneration, T5Config
 
 from ..models import TorchModel
-from ..utils import create_masked_tensor, DEVICE
-
+from ..utils import create_masked_tensor
 
 
 class TigerModelT5(TorchModel):
     def __init__(
             self,
-            sequence_prefix,
-            positive_prefix,
             embedding_dim,
             codebook_size,
             num_positions,
@@ -21,14 +16,9 @@ class TigerModelT5(TorchModel):
             num_decoder_layers,
             dim_feedforward,
             dropout=0.0,
-            activation='relu',
-            layer_norm_eps=1e-9,
             initializer_range=0.02,
     ):
         super().__init__()
-
-        self._sequence_prefix = sequence_prefix
-        self._positive_prefix = positive_prefix
         self._embedding_dim = embedding_dim
         self._codebook_size = codebook_size
         self._num_positions = num_positions
@@ -36,19 +26,19 @@ class TigerModelT5(TorchModel):
         self._num_encoder_layers = num_encoder_layers
         self._num_decoder_layers = num_decoder_layers
         self._dim_feedforward = dim_feedforward
-        self._layer_norm_eps = layer_norm_eps
+        self._dropout = dropout
         self._sem_id_len = 4
 
         unified_vocab_size = codebook_size * self._sem_id_len + 2000 + 10  # 2000 for user ids, 10 for utilities
         t5_config = T5Config(
             vocab_size=unified_vocab_size,
-            d_model=embedding_dim,
+            d_model=self._embedding_dim,
             d_kv=64,
-            d_ff=dim_feedforward,
-            num_layers=num_encoder_layers,
-            num_decoder_layers=num_decoder_layers,
-            num_heads=num_heads,
-            dropout_rate=dropout,
+            d_ff=self._dim_feedforward,
+            num_layers=self._num_encoder_layers,
+            num_decoder_layers=self._num_decoder_layers,
+            num_heads=self._num_heads,
+            dropout_rate=self._dropout,
             is_encoder_decoder=True,
             use_cache=False,
             pad_token_id=unified_vocab_size - 1,
@@ -61,9 +51,10 @@ class TigerModelT5(TorchModel):
         self._init_weights(initializer_range)
 
     def forward(self, inputs):
-        all_sample_events = inputs["semantic_{}.ids".format(self._sequence_prefix)]  # (all_batch_events)
-        all_sample_lengths = inputs["semantic_{}.length".format(self._sequence_prefix)] # (batch_size)
-        offsets = (torch.arange(start=0, end=all_sample_events.shape[0], device=all_sample_events.device, dtype=torch.long) % 4) * self._codebook_size
+        all_sample_events = inputs["semantic_item.ids"]  # (all_batch_events)
+        all_sample_lengths = inputs["semantic_item.length"]  # (batch_size)
+        offsets = (torch.arange(start=0, end=all_sample_events.shape[0], device=all_sample_events.device,
+                                dtype=torch.long) % 4) * self._codebook_size
         all_sample_events = all_sample_events + offsets
 
         batch_size = all_sample_lengths.shape[0]
@@ -84,9 +75,10 @@ class TigerModelT5(TorchModel):
         ], dim=-1)
 
         if self.training:
-            positive_sample_events = inputs["semantic_{}.ids".format(self._positive_prefix)]  # (batch_size * 4)
-            positive_sample_lengths = inputs["semantic_{}.length".format(self._positive_prefix)]  # (batch_size)
-            offsets = (torch.arange(start=0, end=positive_sample_events.shape[0], device=positive_sample_events.device, dtype=torch.long) % 4) * self._codebook_size
+            positive_sample_events = inputs["semantic_labels.ids"]  # (batch_size * 4)
+            positive_sample_lengths = inputs["semantic_labels.length"]  # (batch_size)
+            offsets = (torch.arange(start=0, end=positive_sample_events.shape[0], device=positive_sample_events.device,
+                                    dtype=torch.long) % 4) * self._codebook_size
             positive_sample_events = positive_sample_events + offsets
 
             target_semantic_ids, _ = create_masked_tensor(
@@ -95,7 +87,9 @@ class TigerModelT5(TorchModel):
                 is_tiger=True
             )
             target_semantic_ids = torch.cat(
-                [torch.ones(batch_size, 1, dtype=torch.long, device=target_semantic_ids.device) * self.config.decoder_start_token_id, target_semantic_ids],
+                [torch.ones(batch_size, 1, dtype=torch.long,
+                            device=target_semantic_ids.device) * self.config.decoder_start_token_id,
+                 target_semantic_ids],
                 dim=-1
             )
 
@@ -121,19 +115,15 @@ class TigerModelT5(TorchModel):
                 eos_token_id=self.config.eos_token_id,
                 pad_token_id=self.config.pad_token_id,
                 do_sample=False,
-                early_stopping=False,
-                # logits_processor=[CorrectItemsLogitsProcessor(num_codebooks=self._sem_id_len, codebook_size=self._codebook_size)],
+                early_stopping=False
             )
             return {
                 'predictions': output[:, 1:].reshape(-1, 20, 5 - 1)
             }
 
-
     @classmethod
     def create_from_config(cls, config):
         return cls(
-            sequence_prefix=config["sequence_prefix"],
-            positive_prefix=config['positive_prefix'],
             embedding_dim=config["embedding_dim"],
             codebook_size=config["codebook_size"],
             num_positions=config["num_positions"],
@@ -144,4 +134,3 @@ class TigerModelT5(TorchModel):
             dropout=config.get("dropout", 0.0),
             initializer_range=config.get("initializer_range", 0.02),
         )
-
