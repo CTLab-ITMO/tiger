@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 
-from . import TorchModel
-from .. import utils
+from base import TorchModel
 
 
 class SasRecModel(TorchModel):
@@ -14,8 +13,8 @@ class SasRecModel(TorchModel):
             num_heads,
             num_layers,
             dim_feedforward,
+            activation,
             dropout=0.0,
-            activation='relu',
             layer_norm_eps=1e-9,
             initializer_range=0.02
     ):
@@ -41,7 +40,7 @@ class SasRecModel(TorchModel):
             nhead=num_heads,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
-            activation=utils.get_activation_function(activation),
+            activation=activation,
             layer_norm_eps=layer_norm_eps,
             batch_first=True
         )
@@ -109,7 +108,7 @@ class SasRecModel(TorchModel):
     def _apply_sequential_encoder(self, events, lengths):
         embeddings = self._item_embeddings(events)  # (all_batch_events, embedding_dim)
 
-        embeddings, mask = utils.create_masked_tensor(
+        embeddings, mask = self.create_masked_tensor(
             data=embeddings,
             lengths=lengths
         )  # (batch_size, seq_len, embedding_dim), (batch_size, seq_len)
@@ -124,7 +123,7 @@ class SasRecModel(TorchModel):
 
         positions = positions[positions_mask]  # (all_batch_events)
         position_embeddings = self._position_embeddings(positions)  # (all_batch_events, embedding_dim)
-        position_embeddings, _ = utils.create_masked_tensor(
+        position_embeddings, _ = self.create_masked_tensor(
             data=position_embeddings,
             lengths=lengths
         )  # (batch_size, seq_len, embedding_dim)
@@ -135,7 +134,7 @@ class SasRecModel(TorchModel):
         embeddings = self._dropout(embeddings)  # (batch_size, seq_len, embedding_dim)
         embeddings[~mask] = 0
 
-        causal_mask = torch.tril(torch.ones(seq_len, seq_len)).bool().to(utils.DEVICE)  # (seq_len, seq_len)
+        causal_mask = torch.tril(torch.ones(seq_len, seq_len)).bool().to(embeddings.device)  # (seq_len, seq_len)
         embeddings = self._encoder(
             src=embeddings,
             mask=~causal_mask,

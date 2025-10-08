@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 
-from ..utils import create_logger
 from ..metric import CoverageMetric
+from ..utils import create_logger, DEVICE
 
 logger = create_logger(name=__name__)
 
@@ -38,10 +38,9 @@ class InferenceCallback:
             metrics=None,
     ):
         self._tensorboard_writer = tensorboard_writer
-        self._config_name = config_name
+        self._step_name = config_name
         self._model = model
         self._dataloader = dataloader
-
         self._on_step = on_step
         self._metrics = metrics if metrics is not None else {}
         self._pred_prefix = pred_prefix
@@ -49,7 +48,7 @@ class InferenceCallback:
 
     def __call__(self, inputs, step_num):
         if step_num % self._on_step == 0:
-            logger.debug(f'Running {self._get_name()} on step {step_num}...')
+            logger.debug(f'Running {self._step_name} on step {step_num}...')
             running_params = {}
             for metric_name, metric_function in self._metrics.items():
                 running_params[metric_name] = []
@@ -59,7 +58,7 @@ class InferenceCallback:
                 for batch in self._dataloader:
 
                     for key, value in batch.items():
-                        batch[key] = value.to(utils.DEVICE)
+                        batch[key] = value.to(DEVICE)
 
                     batch.update(self._model(batch))
 
@@ -75,15 +74,12 @@ class InferenceCallback:
                     running_params[metric_name] = metric_function.reduce(running_params[metric_name])
 
             for label, value in running_params.items():
-                inputs[f'{self._get_name()}/{label}'] = np.mean(value)
+                inputs[f'{self._step_name}/{label}'] = np.mean(value)
                 self._tensorboard_writer.add_scalar(
-                    f'{self._get_name()}/{label}',
+                    f'{self._step_name}/{label}',
                     np.mean(value),
                     step_num
                 )
             self._tensorboard_writer.flush()
 
-            logger.debug(f'Running {self._get_name()} on step {step_num} is done!')
-
-    def _get_name(self):
-        return self._config_name
+            logger.debug(f'Running {self._step_name} on step {step_num} is done!')

@@ -41,7 +41,7 @@ class SemanticIdsBatchProcessor(BasicBatchProcessor):
             self._mapping_tensor[item_id] = torch.tensor(semantic_ids, dtype=torch.long)
 
     @classmethod
-    def create_from_config(cls, mapping_path, semantic_length):
+    def create_from_config(cls, mapping_path, sem_id_len=4):
         with open(mapping_path, "r") as f:
             mapping = json.load(f)
 
@@ -49,10 +49,10 @@ class SemanticIdsBatchProcessor(BasicBatchProcessor):
 
         for key, semantic_ids in mapping.items():
             numbers = [int(re.search(r'\d+', item).group()) for item in semantic_ids]
-            assert len(numbers) == semantic_length, "All semantic ids must have the same length"
+            assert len(numbers) == sem_id_len, "All semantic ids must have the same length"
             parsed[int(key)] = numbers
 
-        return cls(mapping=parsed, semantic_length=semantic_length)
+        return cls(mapping=parsed, semantic_length=sem_id_len)
 
     def __call__(self, batch):
         processed_batch = super().__call__(batch)
