@@ -28,7 +28,7 @@ class BasicBatchProcessor:
         return processed_batch
 
 
-class LetterBatchProcessor(BasicBatchProcessor):
+class SemanticIdsBatchProcessor(BasicBatchProcessor):
 
     def __init__(self, mapping, semantic_length):
         self._prefixes = ['item', 'labels', 'positive', 'negative']

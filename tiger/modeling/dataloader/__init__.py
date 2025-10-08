@@ -1,1 +1,1 @@
-from .batch_processors import BasicBatchProcessor, LetterBatchProcessor
+from .batch_processors import BasicBatchProcessor, SemanticIdsBatchProcessor

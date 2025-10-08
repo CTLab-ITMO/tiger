@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 
 from modeling import utils
 from modeling.callbacks import MetricCallback, InferenceCallback
-from modeling.dataloader import LetterBatchProcessor
+from modeling.dataloader import SemanticIdsBatchProcessor
 from modeling.dataset import ScientificFullDataset
 from modeling.loss import IdentityMapLoss
 from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
@@ -100,12 +100,14 @@ def main():
 
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
+    batch_processor = SemanticIdsBatchProcessor.create_from_config(config["index_json_path"], 4)
+
     train_dataloader = DataLoader(
         dataset=train_sampler,
         batch_size=config["dataloader_batch_size"]["train"],
         drop_last=True,
         shuffle=True,
-        collate_fn=LetterBatchProcessor.create_from_config(config["letter_index_json"], 4)
+        collate_fn=batch_processor
     )
 
     validation_dataloader = DataLoader(
@@ -113,7 +115,7 @@ def main():
         batch_size=config["dataloader_batch_size"]["validation"],
         drop_last=False,
         shuffle=False,
-        collate_fn=LetterBatchProcessor.create_from_config(config["letter_index_json"], 4)
+        collate_fn=batch_processor
     )
 
     eval_dataloader = DataLoader(
@@ -121,7 +123,7 @@ def main():
         batch_size=config["dataloader_batch_size"]["validation"],
         drop_last=False,
         shuffle=False,
-        collate_fn=LetterBatchProcessor.create_from_config(config["letter_index_json"], 4)
+        collate_fn=batch_processor
     )
 
     model = TigerModelT5.create_from_config(config['model']).to(DEVICE)
@@ -174,8 +176,6 @@ def main():
         pred_prefix="predictions",
         labels_prefix="labels"
     )
-    # TODO add verbose option for all callbacks, multiple optimizer options (???)
-    # TODO create pre/post callbacks
     logger.debug('Everything is ready for training process!')
 
     # Train process
