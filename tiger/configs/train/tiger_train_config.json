@@ -11,13 +11,13 @@
     "validation": 1024
   },
   "model": {
-    "embedding_dim": 384,
+    "embedding_dim": 128,
     "codebook_size": 256,
     "num_positions": 20,
     "num_heads": 6,
     "num_encoder_layers": 4,
     "num_decoder_layers": 4,
-    "dim_feedforward": 2048,
+    "dim_feedforward": 1024,
     "dropout": 0.1,
     "initializer_range": 0.02
   },
