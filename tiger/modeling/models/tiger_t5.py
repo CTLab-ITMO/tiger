@@ -120,17 +120,3 @@ class TigerModelT5(TorchModel):
             return {
                 'predictions': output[:, 1:].reshape(-1, 20, 5 - 1)
             }
-
-    @classmethod
-    def create_from_config(cls, config):
-        return cls(
-            embedding_dim=config["embedding_dim"],
-            codebook_size=config["codebook_size"],
-            num_positions=config["num_positions"],
-            num_heads=config.get("num_heads", int(config["embedding_dim"] // 64)),
-            num_encoder_layers=config["num_encoder_layers"],
-            num_decoder_layers=config["num_decoder_layers"],
-            dim_feedforward=config.get("dim_feedforward", 4 * config["embedding_dim"]),
-            dropout=config.get("dropout", 0.0),
-            initializer_range=config.get("initializer_range", 0.02),
-        )

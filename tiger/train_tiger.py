@@ -13,13 +13,13 @@ from modeling.loss import IdentityMapLoss
 from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
 from modeling.models import TigerModelT5
 from modeling.optimizer import BasicOptimizer
-from modeling.utils import parse_args, create_logger, fix_random_seed, DEVICE, TensorboardWriter
+from modeling.utils import parse_args, create_logger, fix_random_seed, TensorboardWriter
 
 logger = create_logger(name=__name__)
 seed_val = 42
 
 
-def create_ranking_metrics(num_items, codebook_size, num_codebooks=4):
+def create_ranking_metrics(num_items, codebook_size, num_codebooks):
     print("Logs codebook size: {}, num codebooks: {}, num items: {}".format(codebook_size, num_codebooks, num_items))
     return {
         "ndcg@5": NDCGSemanticMetric(5, codebook_size, num_codebooks),
@@ -71,11 +71,9 @@ def train(dataloader, model, metric_callback, validation_callback, eval_callback
             step_num += 1
 
             if best_metric is None:
-                # Take the last model
                 best_checkpoint = copy.deepcopy(model.state_dict())
                 best_epoch = epoch_num
             elif best_checkpoint is None or best_metric in batch_ and current_metric <= batch_[best_metric]:
-                # If it is the first checkpoint, or it is the best checkpoint
                 current_metric = batch_[best_metric]
                 best_checkpoint = copy.deepcopy(model.state_dict())
                 best_epoch = epoch_num
@@ -92,7 +90,7 @@ def main():
     utils.GLOBAL_TENSORBOARD_WRITER = TensorboardWriter(config['experiment_name'])
 
     logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
-    logger.debug('Current DEVICE: {}'.format(DEVICE))
+    logger.debug('Current DEVICE: {}'.format(utils.DEVICE))
 
     dataset = ScientificFullDataset.create_from_config(config['dataset'])
 
@@ -126,7 +124,17 @@ def main():
         collate_fn=batch_processor
     )
 
-    model = TigerModelT5.create_from_config(config['model']).to(DEVICE)
+    model = TigerModelT5(
+        embedding_dim=config['model']['embedding_dim'],
+        codebook_size=config['model']['codebook_size'],
+        num_positions=config['model']['num_positions'],
+        num_heads=config['model']['num_heads'],
+        num_encoder_layers=config['model']['num_encoder_layers'],
+        num_decoder_layers=config['model']['num_decoder_layers'],
+        dim_feedforward=config['model']['dim_feedforward'],
+        dropout=config['model']['dropout'],
+        initializer_range=config['model']['initializer_range']
+    ).to(utils.DEVICE)
 
     if 'checkpoint' in config:
         checkpoint_path = os.path.join('../checkpoints', f'{config["checkpoint"]}.pth')
@@ -149,36 +157,34 @@ def main():
         clip_grad_threshold=config.get('clip_grad_threshold', None)
     )
 
-    # Метрики для тренировки (логирование каждый шаг)
     metric_callback = MetricCallback(
         on_step=1,
         loss_prefix="loss"
     )
 
-    # Валидация каждые 64 шага
+    ranking_metrics = create_ranking_metrics(dataset_num_items, config['model']['codebook_size'], 4)
+
     validation_callback = InferenceCallback(
         config_name="validation",
         model=model,
         dataloader=validation_dataloader,
         on_step=64,
-        metrics=create_ranking_metrics(dataset_num_items, config['model']['codebook_size'], 4),
+        metrics=ranking_metrics,
         pred_prefix="predictions",
         labels_prefix="labels"
     )
 
-    # Финальная оценка каждые 256 шагов
     eval_callback = InferenceCallback(
         config_name="eval",
         model=model,
         dataloader=eval_dataloader,
         on_step=256,
-        metrics=create_ranking_metrics(dataset_num_items, config['model']['codebook_size'], 4),
+        metrics=ranking_metrics,
         pred_prefix="predictions",
         labels_prefix="labels"
     )
     logger.debug('Everything is ready for training process!')
 
-    # Train process
     _ = train(
         dataloader=train_dataloader,
         model=model,

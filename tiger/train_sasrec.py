@@ -35,11 +35,10 @@ def create_ranking_metrics(num_items):
 
 def train(dataloader, model, metric_callback, validation_callback, eval_callback, optimizer, loss_function,
           epoch_cnt=None, step_cnt=None, best_metric=None,
-          epochs_threshold=None):
+          epochs_threshold=40):
     step_num = 0
     epoch_num = 0
     current_metric = 0
-
     best_epoch = 0
     best_checkpoint = None
 
@@ -71,11 +70,9 @@ def train(dataloader, model, metric_callback, validation_callback, eval_callback
             step_num += 1
 
             if best_metric is None:
-                # Take the last model
                 best_checkpoint = copy.deepcopy(model.state_dict())
                 best_epoch = epoch_num
             elif best_checkpoint is None or best_metric in batch_ and current_metric <= batch_[best_metric]:
-                # If it is the first checkpoint, or it is the best checkpoint
                 current_metric = batch_[best_metric]
                 best_checkpoint = copy.deepcopy(model.state_dict())
                 best_epoch = epoch_num
@@ -101,12 +98,14 @@ def main():
 
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
+    batch_processor = BasicBatchProcessor()
+
     train_dataloader = DataLoader(
         dataset=train_sampler,
         batch_size=config["dataloader_batch_size"]["train"],
         drop_last=True,
         shuffle=True,
-        collate_fn=BasicBatchProcessor()
+        collate_fn=batch_processor
     )
 
     validation_dataloader = DataLoader(
@@ -114,7 +113,7 @@ def main():
         batch_size=config["dataloader_batch_size"]["validation"],
         drop_last=False,
         shuffle=False,
-        collate_fn=BasicBatchProcessor()
+        collate_fn=batch_processor
     )
 
     eval_dataloader = DataLoader(
@@ -122,10 +121,21 @@ def main():
         batch_size=config["dataloader_batch_size"]["validation"],
         drop_last=False,
         shuffle=False,
-        collate_fn=BasicBatchProcessor()
+        collate_fn=batch_processor
     )
 
-    model = SasRecModel.create_from_config(dataset_num_items, dataset_max_sequence_length, config['model']).to(utils.DEVICE)
+    model = SasRecModel(
+        num_items=dataset_num_items,
+        max_sequence_length=dataset_max_sequence_length,
+        embedding_dim=config['model']['embedding_dim'],
+        num_heads=config['model']['num_heads'],
+        num_layers=config['model']['num_layers'],
+        dim_feedforward=config['model']['dim_feedforward'],
+        dropout=config['model']['dropout'],
+        activation=config['model']['activation'],
+        layer_norm_eps=config['model']['layer_norm_eps'],
+        initializer_range=config['model']['initializer_range'],
+    ).to(utils.DEVICE)
 
     if 'checkpoint' in config:
         checkpoint_path = os.path.join('../checkpoints', f'{config["checkpoint"]}.pth')
@@ -154,33 +164,29 @@ def main():
         loss_prefix="loss"
     )
 
-    # Валидация каждые 64 шага
+    ranking_metrics = create_ranking_metrics(dataset_num_items)
+
     validation_callback = InferenceCallback(
         config_name="validation",
         model=model,
         dataloader=validation_dataloader,
         on_step=64,
-        metrics=create_ranking_metrics(dataset_num_items),
+        metrics=ranking_metrics,
         pred_prefix="predictions",
         labels_prefix="labels"
     )
 
-    # Финальная оценка каждые 256 шагов
     eval_callback = InferenceCallback(
         config_name="eval",
         model=model,
         dataloader=eval_dataloader,
         on_step=256,
-        metrics=create_ranking_metrics(dataset_num_items),
+        metrics=ranking_metrics,
         pred_prefix="predictions",
         labels_prefix="labels"
     )
-
-    # TODO add verbose option for all callbacks, multiple optimizer options (???)
-    # TODO create pre/post callbacks
     logger.debug('Everything is ready for training process!')
 
-    # Train process
     _ = train(
         dataloader=train_dataloader,
         model=model,
@@ -194,14 +200,9 @@ def main():
         best_metric="validation/ndcg@20",
         epochs_threshold=config.get('early_stopping_threshold', 40),
     )
-    logger.debug('Saving model...')
-    ckpt_dir = f"../checkpoints/{config['experiment_name']}"
-    os.makedirs(ckpt_dir, exist_ok=True)
 
-    checkpoint_path = '{}/{}_final_state.pth'.format(
-        ckpt_dir,
-        config['experiment_name']
-    )
+    logger.debug('Saving model...')
+    checkpoint_path = '../checkpoints/{}_final_state.pth'.format(config['experiment_name'])
     torch.save(model.state_dict(), checkpoint_path)
     logger.debug('Saved model as {}'.format(checkpoint_path))
 
