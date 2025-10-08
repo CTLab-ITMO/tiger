@@ -34,7 +34,7 @@ def main():
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
     num_codebooks = config['dataset']['num_codebooks']
-    user_ids_count = config['dataset']['user_ids_count']
+    user_ids_count = config['model']['user_ids_count']
     batch_processor = SemanticIdsBatchProcessor.create(
         config['dataset']["index_json_path"], num_codebooks, user_ids_count
     )
