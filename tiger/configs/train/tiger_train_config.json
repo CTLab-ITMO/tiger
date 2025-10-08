@@ -1,12 +1,10 @@
 {
-  "experiment_name": "tiger_beauty_t5_rqkmeans_letter_format_fixed_v2_init_open_source_ref_params",
+  "experiment_name": "tiger_beauty",
   "best_metric": "validation/ndcg@20",
   "dataset": {
-    "path_to_data_dir": "../data",
-    "name": "Beauty",
+    "inter_json_path": "../data/Beauty/inter.json",
     "max_sequence_length": 20,
-    "sampler_type": "last_item_prediction",
-    "letter_inter_json": "../data/Beauty/inter.json"
+    "sampler_type": "last_item_prediction"
   },
   "letter_index_json": "../data/Beauty/index.json",
   "dataloader_batch_size": {

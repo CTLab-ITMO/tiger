@@ -1,1 +1,1 @@
-from .base import ScientificDataset, ScientificFullDataset, LetterFullDataset
+from .base import ScientificDataset, ScientificFullDataset

@@ -1,9 +1,8 @@
 {
-  "experiment_name": "sasrec_beauty_letter",
+  "experiment_name": "sasrec_beauty",
   "best_metric": "validation/ndcg@20",
   "dataset": {
-    "path_to_data_dir": "../data",
-    "name": "Beauty",
+    "inter_json_path": "../data/Beauty/inter.json",
     "max_sequence_length": 20,
     "sampler_type": "next_item_prediction"
   },

@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from modeling import utils
 from modeling.callbacks import MetricCallback, InferenceCallback
 from modeling.dataloader import LetterBatchProcessor
-from modeling.dataset import LetterFullDataset
+from modeling.dataset import ScientificFullDataset
 from modeling.loss import IdentityMapLoss
 from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
 from modeling.models import TigerModelT5
@@ -94,7 +94,7 @@ def main():
     logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
     logger.debug('Current DEVICE: {}'.format(DEVICE))
 
-    dataset = LetterFullDataset.create_from_config(config['dataset'])
+    dataset = ScientificFullDataset.create_from_config(config['dataset'])
 
     dataset_num_items = dataset.num_items
 
