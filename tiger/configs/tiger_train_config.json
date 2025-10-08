@@ -1,14 +1,14 @@
 {
-  "experiment_name": "tiger_beauty_kmeans",
+  "experiment_name": "tiger_beauty",
   "dataset": {
     "inter_json_path": "../data/Beauty/inter.json",
+    "index_json_path": "../data/Beauty/index.json",
     "max_sequence_length": 20,
-    "sampler_type": "last_item_prediction"
+    "sampler_type": "last_item"
   },
-  "index_json_path": "../data/Beauty/index_kmeans.json",
-  "dataloader_batch_size": {
-    "train": 256,
-    "validation": 1024
+  "dataloader": {
+    "train_batch_size": 256,
+    "validation_batch_size": 1024
   },
   "model": {
     "embedding_dim": 128,

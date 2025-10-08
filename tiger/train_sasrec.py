@@ -10,7 +10,8 @@ from modeling.loss import SASRecLoss
 from modeling.metric import NDCGMetric, RecallMetric, CoverageMetric
 from modeling.models import SasRecModel
 from modeling.optimizer import BasicOptimizer
-from modeling.utils import Trainer, parse_args, create_logger, fix_random_seed
+from modeling.utils import parse_args, create_logger, fix_random_seed
+from modeling.utils.trainer import Trainer
 
 logger = create_logger(name=__name__)
 seed_val = 42
@@ -23,7 +24,9 @@ def main():
     logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
     logger.debug('Current DEVICE: {}'.format(utils.DEVICE))
 
-    dataset = ScientificDataset.create(config['dataset'])
+    dataset = ScientificDataset.create(inter_json_path=config['dataset']['inter_json_path'],
+                                       max_sequence_length=config['dataset']['max_sequence_length'],
+                                       sampler_type=config['dataset']['sampler_type'])
     dataset_num_items = dataset.num_items
     dataset_max_sequence_length = dataset.max_sequence_length
 
@@ -33,7 +36,7 @@ def main():
 
     train_dataloader = DataLoader(
         dataset=train_sampler,
-        batch_size=config["dataloader_batch_size"]["train"],
+        batch_size=config["dataloader"]["train_batch_size"],
         drop_last=True,
         shuffle=True,
         collate_fn=batch_processor
@@ -41,7 +44,7 @@ def main():
 
     validation_dataloader = DataLoader(
         dataset=validation_sampler,
-        batch_size=config["dataloader_batch_size"]["validation"],
+        batch_size=config["dataloader"]["validation_batch_size"],
         drop_last=False,
         shuffle=False,
         collate_fn=batch_processor
@@ -49,7 +52,7 @@ def main():
 
     eval_dataloader = DataLoader(
         dataset=test_sampler,
-        batch_size=config["dataloader_batch_size"]["validation"],
+        batch_size=config["dataloader"]["validation_batch_size"],
         drop_last=False,
         shuffle=False,
         collate_fn=batch_processor
@@ -109,8 +112,6 @@ def main():
         epochs_threshold=config.get('early_stopping_threshold', 40),
         checkpoint=config.get('checkpoint', None),
     )
-
-    logger.debug('Everything is ready for training process!')
 
     trainer.train()
     trainer.save()

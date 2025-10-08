@@ -7,8 +7,8 @@ class TrainSampler:
         self._prediction_type = prediction_type
 
         self._transforms = {
-            'last_item_prediction': self._last_item_transform,
-            'next_item_prediction': self._next_item_transform,
+            'last_item': self._last_item_transform,
+            'next_item': self._next_item_transform,
         }
 
     def _last_item_transform(self, sample):

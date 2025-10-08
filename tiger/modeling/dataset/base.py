@@ -24,9 +24,7 @@ class ScientificDataset:
         self._max_sequence_length = max_sequence_length
 
     @classmethod
-    def create(cls, config, mode="simple"):
-        inter_json_path = config['inter_json_path']  # 0-indexed
-        max_sequence_length = config['max_sequence_length']
+    def create(cls, inter_json_path, max_sequence_length, sampler_type, mode="simple"):
         max_user_id, max_item_id = 0, 0
         train_dataset, validation_dataset, test_dataset = [], [], []
 
@@ -85,12 +83,11 @@ class ScientificDataset:
         logger.info('Max user id: {}'.format(max_user_id))
         logger.info('Max item id: {}'.format(max_item_id))
         logger.info('Max sequence length: {}'.format(max_sequence_length))
-        logger.info('{} dataset sparsity: {}'.format(
-            config.get('name', 'dataset'),
+        logger.info('Dataset sparsity: {}'.format(
             (len(train_dataset) + len(test_dataset)) / (max_user_id + 1) / (max_item_id + 1)
         ))
 
-        train_sampler = TrainSampler(train_dataset, config['sampler_type'])
+        train_sampler = TrainSampler(train_dataset, sampler_type)
         validation_sampler = EvalSampler(validation_dataset)
         test_sampler = EvalSampler(test_dataset)
 

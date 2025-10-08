@@ -1,1 +1,1 @@
-from .base import SASRecLoss, IdentityMapLoss
+from .base import SASRecLoss, IdentityLoss

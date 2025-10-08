@@ -32,7 +32,7 @@ class SASRecLoss(nn.Module):
         return loss
 
 
-class IdentityMapLoss(nn.Module):
+class IdentityLoss(nn.Module):
 
     def __init__(self, predictions_prefix, output_prefix=None):
         super().__init__()

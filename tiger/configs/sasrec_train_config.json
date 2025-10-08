@@ -5,9 +5,9 @@
     "max_sequence_length": 20,
     "sampler_type": "next_item_prediction"
   },
-  "dataloader_batch_size": {
-    "train": 256,
-    "validation": 512
+  "dataloader": {
+    "train_batch_size": 256,
+    "validation_batch_size": 512
   },
   "model": {
     "embedding_dim": 64,
