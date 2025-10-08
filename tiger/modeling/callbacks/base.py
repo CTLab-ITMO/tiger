@@ -29,7 +29,7 @@ class InferenceCallback:
     def __init__(
             self,
             tensorboard_writer,
-            config_name,
+            step_name,
             model,
             dataloader,
             on_step,
@@ -38,7 +38,7 @@ class InferenceCallback:
             metrics=None,
     ):
         self._tensorboard_writer = tensorboard_writer
-        self._step_name = config_name
+        self._step_name = step_name
         self._model = model
         self._dataloader = dataloader
         self._on_step = on_step

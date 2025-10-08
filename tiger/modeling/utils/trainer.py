@@ -46,7 +46,7 @@ class Trainer:
 
         self.validation_callback = InferenceCallback(
             tensorboard_writer=tensorboard_writer,
-            config_name="validation",
+            step_name="validation",
             model=model,
             dataloader=validation_dataloader,
             on_step=valid_step,
@@ -57,7 +57,7 @@ class Trainer:
 
         self.eval_callback = InferenceCallback(
             tensorboard_writer=tensorboard_writer,
-            config_name="eval",
+            step_name="eval",
             model=model,
             dataloader=eval_dataloader,
             on_step=eval_step,

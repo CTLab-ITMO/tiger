@@ -116,6 +116,8 @@ def main():
         step_cnt=config.get('train_steps_num'),
         best_metric="validation/ndcg@20",
         epochs_threshold=config.get('early_stopping_threshold', 40),
+        valid_step=64,
+        eval_step=256,
         checkpoint=config.get('checkpoint', None),
     )
 
