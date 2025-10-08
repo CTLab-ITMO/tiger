@@ -1,32 +1,34 @@
 import numpy as np
 import torch
 
-from .. import utils
+from ..utils import create_logger
 from ..metric import CoverageMetric
 
-logger = utils.create_logger(name=__name__)
+logger = create_logger(name=__name__)
 
 
 class MetricCallback:
 
-    def __init__(self, on_step, loss_prefix):
+    def __init__(self, tensorboard_writer, on_step, loss_prefix):
+        self._tensorboard_writer = tensorboard_writer
         self._on_step = on_step
         self._loss_prefix = loss_prefix
 
     def __call__(self, inputs, step_num):
         if step_num % self._on_step == 0:
-            utils.GLOBAL_TENSORBOARD_WRITER.add_scalar(
+            self._tensorboard_writer.add_scalar(
                 'train/{}'.format(self._loss_prefix),
                 inputs[self._loss_prefix],
                 step_num
             )
-            utils.GLOBAL_TENSORBOARD_WRITER.flush()
+            self._tensorboard_writer.flush()
 
 
 class InferenceCallback:
 
     def __init__(
             self,
+            tensorboard_writer,
             config_name,
             model,
             dataloader,
@@ -35,7 +37,8 @@ class InferenceCallback:
             labels_prefix,
             metrics=None,
     ):
-        self.config_name = config_name
+        self._tensorboard_writer = tensorboard_writer
+        self._config_name = config_name
         self._model = model
         self._dataloader = dataloader
 
@@ -45,7 +48,7 @@ class InferenceCallback:
         self._labels_prefix = labels_prefix
 
     def __call__(self, inputs, step_num):
-        if step_num % self._on_step == 0:  # TODO Add time monitoring
+        if step_num % self._on_step == 0:
             logger.debug(f'Running {self._get_name()} on step {step_num}...')
             running_params = {}
             for metric_name, metric_function in self._metrics.items():
@@ -73,14 +76,14 @@ class InferenceCallback:
 
             for label, value in running_params.items():
                 inputs[f'{self._get_name()}/{label}'] = np.mean(value)
-                utils.GLOBAL_TENSORBOARD_WRITER.add_scalar(
+                self._tensorboard_writer.add_scalar(
                     f'{self._get_name()}/{label}',
                     np.mean(value),
                     step_num
                 )
-            utils.GLOBAL_TENSORBOARD_WRITER.flush()
+            self._tensorboard_writer.flush()
 
             logger.debug(f'Running {self._get_name()} on step {step_num} is done!')
 
     def _get_name(self):
-        return self.config_name
+        return self._config_name

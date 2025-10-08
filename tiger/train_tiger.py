@@ -87,7 +87,7 @@ def main():
     fix_random_seed(seed_val)
     config = parse_args()
 
-    utils.GLOBAL_TENSORBOARD_WRITER = TensorboardWriter(config['experiment_name'])
+    tensorboard_writer = TensorboardWriter(config['experiment_name'])
 
     logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
     logger.debug('Current DEVICE: {}'.format(utils.DEVICE))
@@ -165,6 +165,7 @@ def main():
     ranking_metrics = create_ranking_metrics(dataset_num_items, config['model']['codebook_size'], 4)
 
     validation_callback = InferenceCallback(
+        tensorboard_writer=tensorboard_writer,
         config_name="validation",
         model=model,
         dataloader=validation_dataloader,
@@ -175,6 +176,7 @@ def main():
     )
 
     eval_callback = InferenceCallback(
+        tensorboard_writer=tensorboard_writer,
         config_name="eval",
         model=model,
         dataloader=eval_dataloader,
