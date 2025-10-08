@@ -41,7 +41,7 @@ class SemanticIdsBatchProcessor(BasicBatchProcessor):
             self._mapping_tensor[item_id] = torch.tensor(semantic_ids, dtype=torch.long)
 
     @classmethod
-    def create_from_config(cls, mapping_path, sem_id_len=4):
+    def create(cls, mapping_path, sem_id_len):
         with open(mapping_path, "r") as f:
             mapping = json.load(f)
 

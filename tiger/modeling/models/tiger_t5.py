@@ -9,6 +9,7 @@ class TigerModelT5(TorchModel):
             self,
             embedding_dim,
             codebook_size,
+            sem_id_len,
             num_positions,
             num_heads,
             num_encoder_layers,
@@ -26,7 +27,7 @@ class TigerModelT5(TorchModel):
         self._num_decoder_layers = num_decoder_layers
         self._dim_feedforward = dim_feedforward
         self._dropout = dropout
-        self._sem_id_len = 4
+        self._sem_id_len = sem_id_len
 
         unified_vocab_size = codebook_size * self._sem_id_len + 2000 + 10  # 2000 for user ids, 10 for utilities
         t5_config = T5Config(
@@ -53,7 +54,7 @@ class TigerModelT5(TorchModel):
         all_sample_events = inputs["semantic_item.ids"]  # (all_batch_events)
         all_sample_lengths = inputs["semantic_item.length"]  # (batch_size)
         offsets = (torch.arange(start=0, end=all_sample_events.shape[0], device=all_sample_events.device,
-                                dtype=torch.long) % 4) * self._codebook_size
+                                dtype=torch.long) % self._sem_id_len) * self._codebook_size
         all_sample_events = all_sample_events + offsets
 
         batch_size = all_sample_lengths.shape[0]
@@ -74,10 +75,10 @@ class TigerModelT5(TorchModel):
         ], dim=-1)
 
         if self.training:
-            positive_sample_events = inputs["semantic_labels.ids"]  # (batch_size * 4)
+            positive_sample_events = inputs["semantic_labels.ids"]  # (batch_size * sem_id_len)
             positive_sample_lengths = inputs["semantic_labels.length"]  # (batch_size)
             offsets = (torch.arange(start=0, end=positive_sample_events.shape[0], device=positive_sample_events.device,
-                                    dtype=torch.long) % 4) * self._codebook_size
+                                    dtype=torch.long) % self._sem_id_len) * self._codebook_size
             positive_sample_events = positive_sample_events + offsets
 
             target_semantic_ids, _ = self.create_masked_tensor(

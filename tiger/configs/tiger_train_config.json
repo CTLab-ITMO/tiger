@@ -3,6 +3,7 @@
   "dataset": {
     "inter_json_path": "../data/Beauty/inter.json",
     "index_json_path": "../data/Beauty/index_kmeans.json",
+    "num_codebooks": 4,
     "max_sequence_length": 20,
     "sampler_type": "last_item"
   },

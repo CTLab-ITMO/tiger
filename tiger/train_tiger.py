@@ -33,7 +33,8 @@ def main():
 
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
-    batch_processor = SemanticIdsBatchProcessor.create_from_config(config['dataset']["index_json_path"])
+    num_codebooks = config['dataset']['num_codebooks']
+    batch_processor = SemanticIdsBatchProcessor.create(config['dataset']["index_json_path"], num_codebooks)
 
     train_dataloader = DataLoader(
         dataset=train_sampler,
@@ -62,6 +63,7 @@ def main():
     model = TigerModelT5(
         embedding_dim=config['model']['embedding_dim'],
         codebook_size=config['model']['codebook_size'],
+        sem_id_len=num_codebooks,
         num_positions=config['model']['num_positions'],
         num_heads=config['model']['num_heads'],
         num_encoder_layers=config['model']['num_encoder_layers'],
@@ -84,15 +86,15 @@ def main():
 
     codebook_size = config['model']['codebook_size']
     ranking_metrics = {
-        "ndcg@5": NDCGSemanticMetric(5, codebook_size),
-        "ndcg@10": NDCGSemanticMetric(10, codebook_size),
-        "ndcg@20": NDCGSemanticMetric(20, codebook_size),
-        "recall@5": RecallSemanticMetric(5, codebook_size),
-        "recall@10": RecallSemanticMetric(10, codebook_size),
-        "recall@20": RecallSemanticMetric(20, codebook_size),
-        "coverage@5": CoverageSemanticMetric(5, codebook_size, dataset_num_items),
-        "coverage@10": CoverageSemanticMetric(10, codebook_size, dataset_num_items),
-        "coverage@20": CoverageSemanticMetric(20, codebook_size, dataset_num_items)
+        "ndcg@5": NDCGSemanticMetric(5, codebook_size, num_codebooks),
+        "ndcg@10": NDCGSemanticMetric(10, codebook_size, num_codebooks),
+        "ndcg@20": NDCGSemanticMetric(20, codebook_size, num_codebooks),
+        "recall@5": RecallSemanticMetric(5, codebook_size, num_codebooks),
+        "recall@10": RecallSemanticMetric(10, codebook_size, num_codebooks),
+        "recall@20": RecallSemanticMetric(20, codebook_size, num_codebooks),
+        "coverage@5": CoverageSemanticMetric(5, codebook_size, dataset_num_items, num_codebooks),
+        "coverage@10": CoverageSemanticMetric(10, codebook_size, dataset_num_items, num_codebooks),
+        "coverage@20": CoverageSemanticMetric(20, codebook_size, dataset_num_items, num_codebooks)
     }
 
     logger.debug('Everything is ready for training process!')

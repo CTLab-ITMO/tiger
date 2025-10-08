@@ -21,7 +21,7 @@ class NDCGMetric:
 
 class NDCGSemanticMetric:
 
-    def __init__(self, k, codebook_size, num_codebooks=4):
+    def __init__(self, k, codebook_size, num_codebooks):
         self._k = k
         self._codebook_size = codebook_size
         self._num_codebooks = num_codebooks
@@ -62,7 +62,7 @@ class RecallMetric:
 
 class RecallSemanticMetric:
 
-    def __init__(self, k, codebook_size, num_codebooks=4):
+    def __init__(self, k, codebook_size, num_codebooks):
         self._k = k
         self._codebook_size = codebook_size
         self._num_codebooks = num_codebooks
@@ -98,7 +98,7 @@ class CoverageMetric:
 
 class CoverageSemanticMetric(CoverageMetric):
 
-    def __init__(self, k, codebook_size, num_items, num_codebooks=4):
+    def __init__(self, k, codebook_size, num_items, num_codebooks):
         super().__init__(k, num_items)
         self._codebook_size = codebook_size
         self._num_codebooks = num_codebooks
