@@ -191,7 +191,7 @@ def main():
         loss_function=loss_function,
         epoch_cnt=config.get('train_epochs_num'),
         step_cnt=config.get('train_steps_num'),
-        best_metric=config.get('best_metric'),
+        best_metric="validation/ndcg@20",
         epochs_threshold=config.get('early_stopping_threshold', 40),
     )
     logger.debug('Saving model...')

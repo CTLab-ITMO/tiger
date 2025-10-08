@@ -1,6 +1,5 @@
 {
   "experiment_name": "tiger_beauty",
-  "best_metric": "validation/ndcg@20",
   "dataset": {
     "inter_json_path": "../data/Beauty/inter.json",
     "max_sequence_length": 20,
