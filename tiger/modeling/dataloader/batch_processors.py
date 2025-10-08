@@ -30,18 +30,19 @@ class BasicBatchProcessor:
 
 class SemanticIdsBatchProcessor(BasicBatchProcessor):
 
-    def __init__(self, mapping, semantic_length):
+    def __init__(self, mapping, sem_id_len, user_ids_count):
         self._prefixes = ['item', 'labels', 'positive', 'negative']
-        self._semantic_length = semantic_length
+        self._semantic_length = sem_id_len
+        self._user_ids_count = user_ids_count
         self._mapping = mapping
 
         assert sorted(mapping.keys()) == list(range(len(mapping))), "Item ids must be consecutive"
-        self._mapping_tensor = torch.zeros((len(mapping), semantic_length), dtype=torch.long)
+        self._mapping_tensor = torch.zeros((len(mapping), sem_id_len), dtype=torch.long)
         for item_id, semantic_ids in mapping.items():
             self._mapping_tensor[item_id] = torch.tensor(semantic_ids, dtype=torch.long)
 
     @classmethod
-    def create(cls, mapping_path, sem_id_len):
+    def create(cls, mapping_path, sem_id_len, user_ids_count):
         with open(mapping_path, "r") as f:
             mapping = json.load(f)
 
@@ -52,7 +53,7 @@ class SemanticIdsBatchProcessor(BasicBatchProcessor):
             assert len(numbers) == sem_id_len, "All semantic ids must have the same length"
             parsed[int(key)] = numbers
 
-        return cls(mapping=parsed, semantic_length=sem_id_len)
+        return cls(mapping=parsed, sem_id_len=sem_id_len, user_ids_count=user_ids_count)
 
     def __call__(self, batch):
         processed_batch = super().__call__(batch)
@@ -61,12 +62,13 @@ class SemanticIdsBatchProcessor(BasicBatchProcessor):
             if f"{prefix}.ids" in processed_batch:
                 ids = processed_batch[f"{prefix}.ids"]
                 lengths = processed_batch[f"{prefix}.length"]
-                assert ids.min() >= 0; assert ids.max() < self._mapping_tensor.size(0)
+                assert ids.min() >= 0
+                assert ids.max() < self._mapping_tensor.size(0)
                 processed_batch[f"semantic_{prefix}.ids"] = self._mapping_tensor[ids].flatten()
                 processed_batch[f"semantic_{prefix}.length"] = lengths * self._semantic_length
 
         processed_batch['hashed_user.ids'] = torch.tensor(
-            list(map(lambda x: murmurhash.hash(str(x)) % 2000, processed_batch['user.ids'].tolist())),
+            list(map(lambda x: murmurhash.hash(str(x)) % self._user_ids_count, processed_batch['user.ids'].tolist())),
             dtype=torch.long
         )
 

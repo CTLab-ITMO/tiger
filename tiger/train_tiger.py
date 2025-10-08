@@ -34,7 +34,10 @@ def main():
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
     num_codebooks = config['dataset']['num_codebooks']
-    batch_processor = SemanticIdsBatchProcessor.create(config['dataset']["index_json_path"], num_codebooks)
+    user_ids_count = config['dataset']['user_ids_count']
+    batch_processor = SemanticIdsBatchProcessor.create(
+        config['dataset']["index_json_path"], num_codebooks, user_ids_count
+    )
 
     train_dataloader = DataLoader(
         dataset=train_sampler,
@@ -64,6 +67,7 @@ def main():
         embedding_dim=config['model']['embedding_dim'],
         codebook_size=config['model']['codebook_size'],
         sem_id_len=num_codebooks,
+        user_ids_count=user_ids_count,
         num_positions=config['model']['num_positions'],
         num_heads=config['model']['num_heads'],
         num_encoder_layers=config['model']['num_encoder_layers'],

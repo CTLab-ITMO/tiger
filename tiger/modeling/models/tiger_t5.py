@@ -11,6 +11,7 @@ class TigerModelT5(TorchModel):
             codebook_size,
             sem_id_len,
             num_positions,
+            user_ids_count,
             num_heads,
             num_encoder_layers,
             num_decoder_layers,
@@ -28,8 +29,9 @@ class TigerModelT5(TorchModel):
         self._dim_feedforward = dim_feedforward
         self._dropout = dropout
         self._sem_id_len = sem_id_len
+        self.user_ids_count = user_ids_count
 
-        unified_vocab_size = codebook_size * self._sem_id_len + 2000 + 10  # 2000 for user ids, 10 for utilities
+        unified_vocab_size = codebook_size * self._sem_id_len + self.user_ids_count + 10  # 10 for utilities
         t5_config = T5Config(
             vocab_size=unified_vocab_size,
             d_model=self._embedding_dim,
@@ -67,7 +69,8 @@ class TigerModelT5(TorchModel):
 
         input_semantic_ids[~attention_mask] = self.config.pad_token_id
         input_semantic_ids = torch.cat(
-            [self._sem_id_len * self._codebook_size + (inputs['user.ids'][:, None] % 2000), input_semantic_ids],
+            [self._sem_id_len * self._codebook_size + (inputs['user.ids'][:, None] % self.user_ids_count),
+             input_semantic_ids],
             dim=-1
         )
         attention_mask = torch.cat([
