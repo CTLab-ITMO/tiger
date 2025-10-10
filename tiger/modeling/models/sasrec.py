@@ -134,10 +134,10 @@ class SasRecModel(TorchModel):
         embeddings = self._dropout(embeddings)  # (batch_size, seq_len, embedding_dim)
         embeddings[~mask] = 0
 
-        causal_mask = torch.tril(torch.ones(seq_len, seq_len)).bool().to(embeddings.device)  # (seq_len, seq_len)
+        causal_mask = nn.Transformer.generate_square_subsequent_mask(seq_len).to(embeddings.device)  # (seq_len, seq_len)
         embeddings = self._encoder(
             src=embeddings,
-            mask=~causal_mask,
+            mask=causal_mask,
             src_key_padding_mask=~mask
         )  # (batch_size, seq_len, embedding_dim)
 
