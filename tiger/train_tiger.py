@@ -8,7 +8,7 @@ from modeling.dataloader import SemanticIdsBatchProcessor
 from modeling.dataset import ScientificDataset
 from modeling.loss import IdentityLoss
 from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
-from modeling.models import TigerModelT5
+from modeling.models import TigerModel
 from modeling.optimizer import BasicOptimizer
 from modeling.utils import parse_args, create_logger, fix_random_seed
 from modeling.trainer import Trainer
@@ -63,7 +63,7 @@ def main():
         collate_fn=batch_processor
     )
 
-    model = TigerModelT5(
+    model = TigerModel(
         embedding_dim=config['model']['embedding_dim'],
         codebook_size=config['model']['codebook_size'],
         sem_id_len=num_codebooks,

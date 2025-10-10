@@ -4,7 +4,7 @@ from transformers import T5ForConditionalGeneration, T5Config
 from ..models import TorchModel
 
 
-class TigerModelT5(TorchModel):
+class TigerModel(TorchModel):
     def __init__(
             self,
             embedding_dim,
