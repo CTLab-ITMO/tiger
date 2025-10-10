@@ -117,7 +117,7 @@ class SasRecModel(TorchModel):
         seq_len = mask.shape[1]
 
         positions = torch.arange(
-            start=seq_len - 1, end=-1, step=-1, device=mask.device
+            start=0, end=seq_len, step=1, device=mask.device
         )[None].tile([batch_size, 1]).long()  # (batch_size, seq_len)
         positions_mask = positions < lengths[:, None]  # (batch_size, max_seq_len)
 
