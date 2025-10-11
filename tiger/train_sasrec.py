@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from modeling import utils
 from modeling.dataloader import BatchProcessor
 from modeling.dataset import Dataset
-from modeling.loss import SASRecLoss
+from modeling.loss import BCELoss
 from modeling.metric import NDCGMetric, RecallMetric, CoverageMetric
 from modeling.models import SasRecModel
 from modeling.optimizer import BasicOptimizer
@@ -72,7 +72,7 @@ def main():
         initializer_range=config['model']['initializer_range'],
     ).to(utils.DEVICE)
 
-    loss_function = SASRecLoss(
+    loss_function = BCELoss(
         positive_prefix="positive_scores",
         negative_prefix="negative_scores",
         output_prefix="loss"
