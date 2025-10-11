@@ -3,10 +3,10 @@ import logging
 
 from .samplers import TrainSampler, EvalSampler
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
-class ScientificDataset:
+class Dataset:
     def __init__(
             self,
             train_sampler,
@@ -77,13 +77,13 @@ class ScientificDataset:
             })
             assert len(item_ids[-max_sequence_length:]) == len(set(item_ids[-max_sequence_length:]))
 
-        logger.info('Train dataset size: {}'.format(len(train_dataset)))
-        logger.info('Validation dataset size: {}'.format(len(validation_dataset)))
-        logger.info('Test dataset size: {}'.format(len(test_dataset)))
-        logger.info('Max user id: {}'.format(max_user_id))
-        logger.info('Max item id: {}'.format(max_item_id))
-        logger.info('Max sequence length: {}'.format(max_sequence_length))
-        logger.info('Dataset sparsity: {}'.format(
+        LOGGER.info('Train dataset size: {}'.format(len(train_dataset)))
+        LOGGER.info('Validation dataset size: {}'.format(len(validation_dataset)))
+        LOGGER.info('Test dataset size: {}'.format(len(test_dataset)))
+        LOGGER.info('Max user id: {}'.format(max_user_id))
+        LOGGER.info('Max item id: {}'.format(max_item_id))
+        LOGGER.info('Max sequence length: {}'.format(max_sequence_length))
+        LOGGER.info('Dataset sparsity: {}'.format(
             (len(train_dataset) + len(test_dataset)) / (max_user_id + 1) / (max_item_id + 1)
         ))
 

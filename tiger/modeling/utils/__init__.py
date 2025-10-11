@@ -16,6 +16,7 @@ class TensorboardWriter(SummaryWriter):
 
     def __init__(self, experiment_name, logs_dir='../tensorboard_logs', use_time=True):
         self._experiment_name = experiment_name
+        os.makedirs(logs_dir, exist_ok=True)
         super().__init__(
             log_dir=os.path.join(logs_dir,
                                  f'{experiment_name}_{datetime.datetime.now().strftime("%Y-%m-%dT%H:%M" if use_time else "")}')

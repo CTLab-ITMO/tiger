@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 
 from modeling import utils
 from modeling.dataloader import BatchProcessor
-from modeling.dataset import ScientificDataset
+from modeling.dataset import Dataset
 from modeling.loss import IdentityLoss
 from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
 from modeling.models import TigerModel
@@ -24,10 +24,10 @@ def main():
     LOGGER.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
     LOGGER.debug('Current DEVICE: {}'.format(utils.DEVICE))
 
-    dataset = ScientificDataset.create(inter_json_path=config['dataset']['inter_json_path'],
-                                       max_sequence_length=config['dataset']['max_sequence_length'],
-                                       sampler_type=config['dataset']['sampler_type'],
-                                       is_extended=True)
+    dataset = Dataset.create(inter_json_path=config['dataset']['inter_json_path'],
+                             max_sequence_length=config['dataset']['max_sequence_length'],
+                             sampler_type=config['dataset']['sampler_type'],
+                             is_extended=True)
 
     dataset_num_items = dataset.num_items
 
