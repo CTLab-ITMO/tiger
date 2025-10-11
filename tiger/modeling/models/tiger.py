@@ -75,7 +75,7 @@ class TigerModel(TorchModel):
 
         input_semantic_ids[~attention_mask] = self.config.pad_token_id
         input_semantic_ids = torch.cat(
-            [self._sem_id_len * self._codebook_size + (inputs['user.ids'][:, None] % self.user_ids_count),
+            [self._sem_id_len * self._codebook_size + inputs['hashed_user.ids'][:, None],
              input_semantic_ids],
             dim=-1
         )
