@@ -1,6 +1,7 @@
 import torch
 from transformers import T5ForConditionalGeneration, T5Config
 
+from ..utils import create_masked_tensor
 from ..models import TorchModel
 
 
@@ -61,10 +62,10 @@ class TigerModel(TorchModel):
 
         batch_size = all_sample_lengths.shape[0]
 
-        input_semantic_ids, attention_mask = self.create_masked_tensor(
+        input_semantic_ids, attention_mask = create_masked_tensor(
             data=all_sample_events,
             lengths=all_sample_lengths,
-            is_tiger=True
+            is_right_aligned=True
         )
 
         input_semantic_ids[~attention_mask] = self.config.pad_token_id
@@ -84,10 +85,10 @@ class TigerModel(TorchModel):
                                     dtype=torch.long) % self._sem_id_len) * self._codebook_size
             positive_sample_events = positive_sample_events + offsets
 
-            target_semantic_ids, _ = self.create_masked_tensor(
+            target_semantic_ids, _ = create_masked_tensor(
                 data=positive_sample_events,
                 lengths=positive_sample_lengths,
-                is_tiger=True
+                is_right_aligned=True
             )
             target_semantic_ids = torch.cat(
                 [torch.ones(batch_size, 1, dtype=torch.long,

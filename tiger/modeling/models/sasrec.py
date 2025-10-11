@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+from ..utils import create_masked_tensor
 from ..models import TorchModel
 
 
@@ -24,7 +25,7 @@ class SasRecModel(TorchModel):
         self._embedding_dim = embedding_dim
 
         self._item_embeddings = nn.Embedding(
-            num_embeddings=num_items + 1,
+            num_embeddings=num_items,
             embedding_dim=embedding_dim
         )
         self._position_embeddings = nn.Embedding(
@@ -108,7 +109,7 @@ class SasRecModel(TorchModel):
     def _apply_sequential_encoder(self, events, lengths):
         embeddings = self._item_embeddings(events)  # (all_batch_events, embedding_dim)
 
-        embeddings, mask = self.create_masked_tensor(
+        embeddings, mask = create_masked_tensor(
             data=embeddings,
             lengths=lengths
         )  # (batch_size, seq_len, embedding_dim), (batch_size, seq_len)
@@ -117,17 +118,11 @@ class SasRecModel(TorchModel):
         seq_len = mask.shape[1]
 
         positions = torch.arange(
-            start=0, end=seq_len, step=1, device=mask.device
-        )[None].tile([batch_size, 1]).long()  # (batch_size, seq_len)
-        positions_mask = positions < lengths[:, None]  # (batch_size, max_seq_len)
+            start=0, end=seq_len, device=mask.device
+        )[None].expand(batch_size, -1)  # (batch_size, seq_len)
 
-        positions = positions[positions_mask]  # (all_batch_events)
-        position_embeddings = self._position_embeddings(positions)  # (all_batch_events, embedding_dim)
-        position_embeddings, _ = self.create_masked_tensor(
-            data=position_embeddings,
-            lengths=lengths
-        )  # (batch_size, seq_len, embedding_dim)
-        assert torch.allclose(position_embeddings[~mask], embeddings[~mask])
+        position_embeddings = self._position_embeddings(positions)   # (batch_size, seq_len, embedding_dim)
+        position_embeddings[~mask] = 0
 
         embeddings = embeddings + position_embeddings  # (batch_size, seq_len, embedding_dim)
         embeddings = self._layernorm(embeddings)  # (batch_size, seq_len, embedding_dim)

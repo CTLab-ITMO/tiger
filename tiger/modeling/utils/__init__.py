@@ -77,7 +77,7 @@ def get_activation_function(name, **kwargs):
         raise ValueError('Unknown activation function name `{}`'.format(name))
 
 
-def create_masked_tensor(data, lengths, is_tiger=False):
+def create_masked_tensor(data, lengths, is_right_aligned=False):
     batch_size = lengths.shape[0]
     max_sequence_length = lengths.max().item()
 
@@ -98,7 +98,7 @@ def create_masked_tensor(data, lengths, is_tiger=False):
         device=DEVICE
     )[None].tile([batch_size, 1]) < lengths[:, None]  # (batch_size, max_seq_len)
 
-    if is_tiger:
+    if is_right_aligned:
         mask = torch.flip(mask, dims=[-1])
     padded_tensor[mask] = data
 
