@@ -4,7 +4,7 @@ import json
 from torch.utils.data import DataLoader
 
 from modeling import utils
-from modeling.dataloader import BasicBatchProcessor
+from modeling.dataloader import BatchProcessor
 from modeling.dataset import ScientificDataset
 from modeling.loss import SASRecLoss
 from modeling.metric import NDCGMetric, RecallMetric, CoverageMetric
@@ -13,16 +13,16 @@ from modeling.optimizer import BasicOptimizer
 from modeling.utils import parse_args, create_logger, fix_random_seed
 from modeling.trainer import Trainer
 
-logger = create_logger(name=__name__)
-seed_val = 42
+LOGGER = create_logger(name=__name__)
+SEED_VALUE = 42
 
 
 def main():
-    fix_random_seed(seed_val)
+    fix_random_seed(SEED_VALUE)
     config = parse_args()
 
-    logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
-    logger.debug('Current DEVICE: {}'.format(utils.DEVICE))
+    LOGGER.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
+    LOGGER.debug('Current DEVICE: {}'.format(utils.DEVICE))
 
     dataset = ScientificDataset.create(inter_json_path=config['dataset']['inter_json_path'],
                                        max_sequence_length=config['dataset']['max_sequence_length'],
@@ -32,7 +32,7 @@ def main():
 
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
-    batch_processor = BasicBatchProcessor()
+    batch_processor = BatchProcessor()
 
     train_dataloader = DataLoader(
         dataset=train_sampler,
@@ -66,6 +66,7 @@ def main():
         num_layers=config['model']['num_layers'],
         dim_feedforward=config['model']['dim_feedforward'],
         activation=utils.get_activation_function(config['model']['activation']),
+        topk_k=config['model']['topk_k'],
         dropout=config['model']['dropout'],
         layer_norm_eps=config['model']['layer_norm_eps'],
         initializer_range=config['model']['initializer_range'],
@@ -95,7 +96,7 @@ def main():
         "coverage@20": CoverageMetric(20, dataset_num_items)
     }
 
-    logger.debug('Everything is ready for training process!')
+    LOGGER.debug('Everything is ready for training process!')
 
     trainer = Trainer(
         experiment_name=config['experiment_name'],
@@ -118,7 +119,7 @@ def main():
     trainer.train()
     trainer.save()
 
-    logger.debug('Training finished!')
+    LOGGER.debug('Training finished!')
 
 
 if __name__ == '__main__':

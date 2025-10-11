@@ -95,8 +95,8 @@ class ScientificDataset:
             train_sampler=train_sampler,
             validation_sampler=validation_sampler,
             test_sampler=test_sampler,
-            num_users=max_user_id + 1,
-            num_items=max_item_id + 1,
+            num_users=max_user_id + 1,  # +1 because 0-indexed
+            num_items=max_item_id + 1,  # +1 because 0-indexed
             max_sequence_length=max_sequence_length
         )
 

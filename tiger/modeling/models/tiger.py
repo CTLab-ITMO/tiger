@@ -17,6 +17,9 @@ class TigerModel(TorchModel):
             num_encoder_layers,
             num_decoder_layers,
             dim_feedforward,
+            num_beams=50,
+            num_return_sequences=20,
+            d_kv=64,
             dropout=0.0,
             initializer_range=0.02,
     ):
@@ -28,15 +31,18 @@ class TigerModel(TorchModel):
         self._num_encoder_layers = num_encoder_layers
         self._num_decoder_layers = num_decoder_layers
         self._dim_feedforward = dim_feedforward
+        self._num_beams = num_beams
+        self._num_return_sequences = num_return_sequences
+        self._d_kv = d_kv
         self._dropout = dropout
         self._sem_id_len = sem_id_len
         self.user_ids_count = user_ids_count
 
         unified_vocab_size = codebook_size * self._sem_id_len + self.user_ids_count + 10  # 10 for utilities
-        t5_config = T5Config(
+        self.config = T5Config(
             vocab_size=unified_vocab_size,
             d_model=self._embedding_dim,
-            d_kv=64,
+            d_kv=self._d_kv,
             d_ff=self._dim_feedforward,
             num_layers=self._num_encoder_layers,
             num_decoder_layers=self._num_decoder_layers,
@@ -49,8 +55,7 @@ class TigerModel(TorchModel):
             decoder_start_token_id=unified_vocab_size - 3,
             tie_word_embeddings=False
         )
-        self.config = t5_config
-        self.model = T5ForConditionalGeneration(config=t5_config)
+        self.model = T5ForConditionalGeneration(config=self.config)
         self._init_weights(initializer_range)
 
     def forward(self, inputs):
@@ -112,8 +117,8 @@ class TigerModel(TorchModel):
             output = self.model.generate(
                 input_ids=input_semantic_ids,
                 attention_mask=attention_mask,
-                num_beams=50,
-                num_return_sequences=20,
+                num_beams=self._num_beams,
+                num_return_sequences=self._num_return_sequences,
                 max_length=self._sem_id_len + 1,
                 decoder_start_token_id=self.config.decoder_start_token_id,
                 eos_token_id=self.config.eos_token_id,
@@ -122,5 +127,5 @@ class TigerModel(TorchModel):
                 early_stopping=False
             )
             return {
-                'predictions': output[:, 1:].reshape(-1, 20, self._sem_id_len)
+                'predictions': output[:, 1:].reshape(-1, self._num_return_sequences, self._sem_id_len)
             }

@@ -15,6 +15,7 @@ class SasRecModel(TorchModel):
             num_layers,
             dim_feedforward,
             activation,
+            topk_k,
             dropout=0.0,
             layer_norm_eps=1e-9,
             initializer_range=0.02
@@ -32,6 +33,8 @@ class SasRecModel(TorchModel):
             num_embeddings=max_sequence_length,
             embedding_dim=embedding_dim
         )
+
+        self._topk_k = topk_k
 
         self._layernorm = nn.LayerNorm(embedding_dim, eps=layer_norm_eps)
         self._dropout = nn.Dropout(dropout)
@@ -102,7 +105,7 @@ class SasRecModel(TorchModel):
                 self._item_embeddings.weight
             )  # (batch_size, num_items + 1)
 
-            _, indices = torch.topk(candidate_scores, k=20, dim=-1, largest=True)  # (batch_size, 20)
+            _, indices = torch.topk(candidate_scores, k=self._topk_k, dim=-1, largest=True)  # (batch_size, topk_k)
 
             return {'predictions': indices}
 

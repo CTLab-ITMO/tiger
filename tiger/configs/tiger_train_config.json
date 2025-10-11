@@ -20,6 +20,9 @@
     "num_encoder_layers": 4,
     "num_decoder_layers": 4,
     "dim_feedforward": 1024,
+    "num_beams": 50,
+    "num_return_sequences": 20,
+    "d_kv": 64,
     "dropout": 0.1,
     "initializer_range": 0.02
   },

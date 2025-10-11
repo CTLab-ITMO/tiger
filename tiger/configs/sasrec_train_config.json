@@ -16,6 +16,7 @@
     "dim_feedforward": 256,
     "dropout": 0.3,
     "activation": "relu",
+    "topk_k": 20,
     "layer_norm_eps": 1e-9,
     "initializer_range": 0.02
   },

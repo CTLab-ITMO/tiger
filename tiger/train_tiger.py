@@ -4,7 +4,7 @@ import json
 from torch.utils.data import DataLoader
 
 from modeling import utils
-from modeling.dataloader import SemanticIdsBatchProcessor
+from modeling.dataloader import BatchProcessor
 from modeling.dataset import ScientificDataset
 from modeling.loss import IdentityLoss
 from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
@@ -13,16 +13,16 @@ from modeling.optimizer import BasicOptimizer
 from modeling.utils import parse_args, create_logger, fix_random_seed
 from modeling.trainer import Trainer
 
-logger = create_logger(name=__name__)
-seed_val = 42
+LOGGER = create_logger(name=__name__)
+SEED_VALUE = 42
 
 
 def main():
-    fix_random_seed(seed_val)
+    fix_random_seed(SEED_VALUE)
     config = parse_args()
 
-    logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
-    logger.debug('Current DEVICE: {}'.format(utils.DEVICE))
+    LOGGER.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
+    LOGGER.debug('Current DEVICE: {}'.format(utils.DEVICE))
 
     dataset = ScientificDataset.create(inter_json_path=config['dataset']['inter_json_path'],
                                        max_sequence_length=config['dataset']['max_sequence_length'],
@@ -35,7 +35,7 @@ def main():
 
     num_codebooks = config['dataset']['num_codebooks']
     user_ids_count = config['model']['user_ids_count']
-    batch_processor = SemanticIdsBatchProcessor.create(
+    batch_processor = BatchProcessor.create(
         config['dataset']["index_json_path"], num_codebooks, user_ids_count
     )
 
@@ -73,6 +73,9 @@ def main():
         num_encoder_layers=config['model']['num_encoder_layers'],
         num_decoder_layers=config['model']['num_decoder_layers'],
         dim_feedforward=config['model']['dim_feedforward'],
+        num_beams=config['model']['num_beams'],
+        num_return_sequences=config['model']['num_return_sequences'],
+        d_kv=config['model']['d_kv'],
         dropout=config['model']['dropout'],
         initializer_range=config['model']['initializer_range']
     ).to(utils.DEVICE)
@@ -80,7 +83,7 @@ def main():
     loss_function = IdentityLoss(
         predictions_prefix="loss",
         output_prefix="loss"
-    )
+    )  # Passes through the loss computed inside the model without modification
 
     optimizer = BasicOptimizer(
         model=model,
@@ -101,7 +104,7 @@ def main():
         "coverage@20": CoverageSemanticMetric(20, codebook_size, dataset_num_items, num_codebooks)
     }
 
-    logger.debug('Everything is ready for training process!')
+    LOGGER.debug('Everything is ready for training process!')
 
     trainer = Trainer(
         experiment_name=config['experiment_name'],
@@ -124,7 +127,7 @@ def main():
     trainer.train()
     trainer.save()
 
-    logger.debug('Training finished!')
+    LOGGER.debug('Training finished!')
 
 
 if __name__ == '__main__':
