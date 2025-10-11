@@ -3,6 +3,7 @@ import re
 import torch
 import murmurhash
 
+
 class BatchProcessor:
 
     def __init__(self, mapping=None, sem_id_len=None, user_ids_count=None):

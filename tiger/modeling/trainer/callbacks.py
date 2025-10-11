@@ -4,7 +4,7 @@ import torch
 from ..metric import CoverageMetric
 from ..utils import create_logger, DEVICE
 
-logger = create_logger(name=__name__)
+LOGGER = create_logger(name=__name__)
 
 
 class MetricCallback:
@@ -48,7 +48,7 @@ class InferenceCallback:
 
     def __call__(self, inputs, step_num):
         if step_num % self._on_step == 0:
-            logger.debug(f'Running {self._step_name} on step {step_num}...')
+            LOGGER.debug(f'Running {self._step_name} on step {step_num}...')
             running_params = {}
             for metric_name, metric_function in self._metrics.items():
                 running_params[metric_name] = []
@@ -82,4 +82,4 @@ class InferenceCallback:
                 )
             self._tensorboard_writer.flush()
 
-            logger.debug(f'Running {self._step_name} on step {step_num} is done!')
+            LOGGER.debug(f'Running {self._step_name} on step {step_num} is done!')

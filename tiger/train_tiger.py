@@ -27,7 +27,7 @@ def main():
     dataset = ScientificDataset.create(inter_json_path=config['dataset']['inter_json_path'],
                                        max_sequence_length=config['dataset']['max_sequence_length'],
                                        sampler_type=config['dataset']['sampler_type'],
-                                       mode='full')
+                                       is_extended=True)
 
     dataset_num_items = dataset.num_items
 

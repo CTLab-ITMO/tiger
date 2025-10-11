@@ -24,7 +24,7 @@ class ScientificDataset:
         self._max_sequence_length = max_sequence_length
 
     @classmethod
-    def create(cls, inter_json_path, max_sequence_length, sampler_type, mode="simple"):
+    def create(cls, inter_json_path, max_sequence_length, sampler_type, is_extended=False):
         max_user_id, max_item_id = 0, 0
         train_dataset, validation_dataset, test_dataset = [], [], []
 
@@ -40,7 +40,7 @@ class ScientificDataset:
 
             assert len(item_ids) >= 5, f'Core-5 dataset required, user {user_id} has {len(item_ids)} items'
 
-            if mode == "full":
+            if is_extended:
                 for prefix_length in range(5 - 2 + 1, len(item_ids) - 2 + 1):
                     # prefix = [1, 2, 3, 4, 5]
                     # prefix = [1, 2, 3, 4, 5, 6]

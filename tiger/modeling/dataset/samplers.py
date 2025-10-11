@@ -11,7 +11,8 @@ class TrainSampler:
             'next_item': self._next_item_transform,
         }
 
-    def _last_item_transform(self, sample):
+    @staticmethod
+    def _last_item_transform(sample):
         item_sequence = sample['item.ids'][:-1]
         last_item = sample['item.ids'][-1]
         return {
@@ -23,7 +24,8 @@ class TrainSampler:
             'labels.length': 1,
         }
 
-    def _next_item_transform(self, sample):
+    @staticmethod
+    def _next_item_transform(sample):
         item_sequence = sample['item.ids'][:-1]
         next_item_sequence = sample['item.ids'][1:]
         return {
