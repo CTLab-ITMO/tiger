@@ -13,13 +13,19 @@ DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 
 class TensorboardWriter(SummaryWriter):
-
-    def __init__(self, experiment_name, logs_dir='../tensorboard_logs', use_time=True):
+    def __init__(
+            self,
+            experiment_name,
+            logs_dir='../tensorboard_logs',
+            use_time=True
+        ):
         self._experiment_name = experiment_name
         os.makedirs(logs_dir, exist_ok=True)
         super().__init__(
-            log_dir=os.path.join(logs_dir,
-                                 f'{experiment_name}_{datetime.datetime.now().strftime("%Y-%m-%dT%H:%M" if use_time else "")}')
+            log_dir=os.path.join(
+                logs_dir,
+                f'{experiment_name}_{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M' if use_time else '')}'
+            )
         )
 
     def add_scalar(self, *args, **kwargs):
@@ -64,16 +70,6 @@ def get_activation_function(name, **kwargs):
         return torch.nn.ELU(alpha=float(kwargs.get('alpha', 1.0)))
     elif name == 'leaky':
         return torch.nn.LeakyReLU(negative_slope=float(kwargs.get('negative_slope', 1e-2)))
-    elif name == 'sigmoid':
-        return torch.nn.Sigmoid()
-    elif name == 'tanh':
-        return torch.nn.Tanh()
-    elif name == 'softmax':
-        return torch.nn.Softmax()
-    elif name == 'softplus':
-        return torch.nn.Softplus(beta=int(kwargs.get('beta', 1.0)), threshold=int(kwargs.get('threshold', 20)))
-    elif name == 'softmax_logit':
-        return torch.nn.LogSoftmax()
     else:
         raise ValueError('Unknown activation function name `{}`'.format(name))
 

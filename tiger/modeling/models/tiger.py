@@ -20,6 +20,8 @@ class TigerModel(TorchModel):
             num_beams=50,
             num_return_sequences=20,
             d_kv=64,
+            layer_norm_eps=1e-9,
+            activation='relu',
             dropout=0.0,
             initializer_range=0.02,
     ):
@@ -34,6 +36,8 @@ class TigerModel(TorchModel):
         self._num_beams = num_beams
         self._num_return_sequences = num_return_sequences
         self._d_kv = d_kv
+        self._layer_norm_eps = layer_norm_eps
+        self._activation = activation
         self._dropout = dropout
         self._sem_id_len = sem_id_len
         self.user_ids_count = user_ids_count
@@ -53,16 +57,24 @@ class TigerModel(TorchModel):
             pad_token_id=unified_vocab_size - 1,
             eos_token_id=unified_vocab_size - 2,
             decoder_start_token_id=unified_vocab_size - 3,
+            layer_norm_epsilon=self._layer_norm_eps,
+            feed_forward_proj=self._activation,
             tie_word_embeddings=False
         )
         self.model = T5ForConditionalGeneration(config=self.config)
         self._init_weights(initializer_range)
 
     def forward(self, inputs):
-        all_sample_events = inputs["semantic_item.ids"]  # (all_batch_events)
-        all_sample_lengths = inputs["semantic_item.length"]  # (batch_size)
-        offsets = (torch.arange(start=0, end=all_sample_events.shape[0], device=all_sample_events.device,
-                                dtype=torch.long) % self._sem_id_len) * self._codebook_size
+        all_sample_events = inputs['semantic_item.ids']  # (all_batch_events)
+        all_sample_lengths = inputs['semantic_item.length']  # (batch_size)
+        offsets = (
+            torch.arange(
+                start=0,
+                end=all_sample_events.shape[0],
+                device=all_sample_events.device,
+                dtype=torch.long
+            ) % self._sem_id_len
+        ) * self._codebook_size
         all_sample_events = all_sample_events + offsets
 
         batch_size = all_sample_lengths.shape[0]
@@ -74,20 +86,26 @@ class TigerModel(TorchModel):
         )
 
         input_semantic_ids[~attention_mask] = self.config.pad_token_id
-        input_semantic_ids = torch.cat(
-            [self._sem_id_len * self._codebook_size + inputs['hashed_user.ids'][:, None],
-             input_semantic_ids],
-            dim=-1
-        )
+        input_semantic_ids = torch.cat([
+            self._sem_id_len * self._codebook_size + inputs['hashed_user.ids'][:, None],
+            input_semantic_ids
+        ], dim=-1)
         attention_mask = torch.cat([
-            attention_mask, torch.ones(batch_size, 1, device=attention_mask.device, dtype=attention_mask.dtype)
+            attention_mask,
+            torch.ones(batch_size, 1, device=attention_mask.device, dtype=attention_mask.dtype)
         ], dim=-1)
 
         if self.training:
-            positive_sample_events = inputs["semantic_labels.ids"]  # (batch_size * sem_id_len)
-            positive_sample_lengths = inputs["semantic_labels.length"]  # (batch_size)
-            offsets = (torch.arange(start=0, end=positive_sample_events.shape[0], device=positive_sample_events.device,
-                                    dtype=torch.long) % self._sem_id_len) * self._codebook_size
+            positive_sample_events = inputs['semantic_labels.ids']  # (batch_size * sem_id_len)
+            positive_sample_lengths = inputs['semantic_labels.length']  # (batch_size)
+            offsets = (
+                torch.arange(
+                    start=0,
+                    end=positive_sample_events.shape[0],
+                    device=positive_sample_events.device,
+                    dtype=torch.long
+                ) % self._sem_id_len
+            ) * self._codebook_size
             positive_sample_events = positive_sample_events + offsets
 
             target_semantic_ids, _ = create_masked_tensor(
@@ -95,12 +113,14 @@ class TigerModel(TorchModel):
                 lengths=positive_sample_lengths,
                 is_right_aligned=True
             )
-            target_semantic_ids = torch.cat(
-                [torch.ones(batch_size, 1, dtype=torch.long,
-                            device=target_semantic_ids.device) * self.config.decoder_start_token_id,
-                 target_semantic_ids],
-                dim=-1
-            )
+            target_semantic_ids = torch.cat([
+                torch.ones(
+                    batch_size, 1,
+                    dtype=torch.long,
+                    device=target_semantic_ids.device
+                ) * self.config.decoder_start_token_id,
+                target_semantic_ids
+            ], dim=-1)
 
             decoder_input_ids = target_semantic_ids[:, :-1].contiguous()
             labels = target_semantic_ids[:, 1:].contiguous()

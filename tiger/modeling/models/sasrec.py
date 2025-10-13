@@ -53,15 +53,15 @@ class SasRecModel(TorchModel):
         self._init_weights(initializer_range)
 
     def forward(self, inputs):
-        all_sample_events = inputs["item.ids"]  # (all_batch_events)
-        all_sample_lengths = inputs["item.length"]  # (batch_size)
+        all_sample_events = inputs['item.ids']  # (all_batch_events)
+        all_sample_lengths = inputs['item.length']  # (batch_size)
 
         embeddings, mask = self._apply_sequential_encoder(
             all_sample_events, all_sample_lengths
         )  # (batch_size, seq_len, embedding_dim), (batch_size, seq_len)
 
         if self.training:  # training mode
-            all_positive_sample_events = inputs["labels.ids"]  # (all_batch_events)
+            all_positive_sample_events = inputs['labels.ids']  # (all_batch_events)
 
             all_sample_embeddings = embeddings[mask]  # (all_batch_events, embedding_dim)
 
@@ -83,8 +83,12 @@ class SasRecModel(TorchModel):
             negative_scores = torch.gather(
                 input=all_scores,
                 dim=1,
-                index=torch.randint(low=0, high=all_scores.shape[1], size=all_positive_sample_events.shape,
-                                    device=all_positive_sample_events.device)[..., None]
+                index=torch.randint(
+                    low=0,
+                    high=all_scores.shape[1],
+                    size=all_positive_sample_events.shape,
+                    device=all_positive_sample_events.device
+                )[..., None]
             )[:, 0]  # (all_batch_items)
 
             return {
@@ -131,8 +135,7 @@ class SasRecModel(TorchModel):
         embeddings = self._layernorm(embeddings)  # (batch_size, seq_len, embedding_dim)
         embeddings = self._dropout(embeddings)  # (batch_size, seq_len, embedding_dim)
         embeddings[~mask] = 0
-
-        causal_mask = nn.Transformer.generate_square_subsequent_mask(seq_len).to(embeddings.device)  # (seq_len, seq_len)
+        causal_mask = nn.Transformer.generate_square_subsequent_mask(seq_len).bool().to(embeddings.device)  # (seq_len, seq_len)
         embeddings = self._encoder(
             src=embeddings,
             mask=causal_mask,

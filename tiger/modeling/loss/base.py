@@ -3,7 +3,6 @@ import torch.nn as nn
 
 
 class BCELoss(nn.Module):
-
     def __init__(
             self,
             positive_prefix,
@@ -33,7 +32,6 @@ class BCELoss(nn.Module):
 
 
 class IdentityLoss(nn.Module):
-
     def __init__(self, predictions_prefix, output_prefix=None):
         super().__init__()
         self._input_loss_key = predictions_prefix
@@ -41,7 +39,7 @@ class IdentityLoss(nn.Module):
 
     def forward(self, inputs):
         loss = inputs[self._input_loss_key]
-        assert loss.dim() == 0, "Loss must be a scalar tensor"
+        assert loss.dim() == 0, 'Loss must be a scalar tensor'
         if self._output_prefix is not None:
             inputs[self._output_prefix] = loss.cpu().item()
         return loss

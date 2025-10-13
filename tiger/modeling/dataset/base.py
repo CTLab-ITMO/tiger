@@ -38,14 +38,15 @@ class Dataset:
             if item_ids:
                 max_item_id = max(max_item_id, max(item_ids))
 
-            assert len(item_ids) >= 5, f'Core-5 dataset required, user {user_id} has {len(item_ids)} items'
+            assert len(item_ids) >= 5, f'Core-5 dataset is used, user {user_id} has only {len(item_ids)} items'
 
+            # sequence = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] (9 - valid, 10 - test)
             if is_extended:
+                # sample = [1, 2, 3, 4, 5]
+                # sample = [1, 2, 3, 4, 5, 6]
+                # sample = [1, 2, 3, 4, 5, 6, 7]
+                # sample = [1, 2, 3, 4, 5, 6, 7, 8]
                 for prefix_length in range(5 - 2 + 1, len(item_ids) - 2 + 1):
-                    # prefix = [1, 2, 3, 4, 5]
-                    # prefix = [1, 2, 3, 4, 5, 6]
-                    # prefix = [1, 2, 3, 4, 5, 6, 7]
-                    # prefix = [1, 2, 3, 4, 5, 6, 7, 8]
                     train_dataset.append({
                         'user.ids': [user_id],
                         'user.length': 1,
@@ -53,6 +54,7 @@ class Dataset:
                         'item.length': len(item_ids[:prefix_length][-max_sequence_length:]),
                     })
             else:
+                # sample = [1, 2, 3, 4, 5, 6, 7, 8]
                 train_dataset.append({
                     'user.ids': [user_id],
                     'user.length': 1,
@@ -61,6 +63,7 @@ class Dataset:
                 })
             assert len(item_ids[:-2][-max_sequence_length:]) == len(set(item_ids[:-2][-max_sequence_length:]))
 
+            # sample = [1, 2, 3, 4, 5, 6, 7, 8, 9]
             validation_dataset.append({
                 'user.ids': [user_id],
                 'user.length': 1,
@@ -69,6 +72,7 @@ class Dataset:
             })
             assert len(item_ids[:-1][-max_sequence_length:]) == len(set(item_ids[:-1][-max_sequence_length:]))
 
+            # sample = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
             test_dataset.append({
                 'user.ids': [user_id],
                 'user.length': 1,
@@ -77,15 +81,11 @@ class Dataset:
             })
             assert len(item_ids[-max_sequence_length:]) == len(set(item_ids[-max_sequence_length:]))
 
-        LOGGER.info('Train dataset size: {}'.format(len(train_dataset)))
-        LOGGER.info('Validation dataset size: {}'.format(len(validation_dataset)))
-        LOGGER.info('Test dataset size: {}'.format(len(test_dataset)))
-        LOGGER.info('Max user id: {}'.format(max_user_id))
-        LOGGER.info('Max item id: {}'.format(max_item_id))
-        LOGGER.info('Max sequence length: {}'.format(max_sequence_length))
-        LOGGER.info('Dataset sparsity: {}'.format(
-            (len(train_dataset) + len(test_dataset)) / (max_user_id + 1) / (max_item_id + 1)
-        ))
+        LOGGER.info(f'Train dataset size: {len(train_dataset)}')
+        LOGGER.info(f'Validation dataset size: {len(validation_dataset)}')
+        LOGGER.info(f'Test dataset size: {len(test_dataset)}')
+        LOGGER.info(f'Max user id: {max_user_id}')
+        LOGGER.info(f'Max item id: {max_item_id}')
 
         train_sampler = TrainSampler(train_dataset, sampler_type)
         validation_sampler = EvalSampler(validation_dataset)
@@ -95,8 +95,8 @@ class Dataset:
             train_sampler=train_sampler,
             validation_sampler=validation_sampler,
             test_sampler=test_sampler,
-            num_users=max_user_id + 1,  # +1 because 0-indexed
-            num_items=max_item_id + 1,  # +1 because 0-indexed
+            num_users=max_user_id + 1,  # +1 added because our ids are 0-indexed
+            num_items=max_item_id + 1,  # +1 added because our ids are 0-indexed
             max_sequence_length=max_sequence_length
         )
 
