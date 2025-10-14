@@ -79,7 +79,7 @@ Please note that our reported numbers for both SASRec and TIGER are lower than t
 
 ## Implementation Differences
 
-This implementation differs from the original TIGER paper in several key aspects. We have not yet fine-tuned the models to achieve optimal performance - this will be addressed in future work. Currently, most parameters are taken directly from the original papers.
+This implementation differs from the original TIGER paper in several key aspects. We have not yet tuned the models to achieve optimal performance. This will be addressed in future work. Currently, most parameters are taken directly from the original papers.
 
 ### Key Differences:
 
