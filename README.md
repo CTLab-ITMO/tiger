@@ -90,7 +90,7 @@ This implementation differs from the original TIGER paper in several key aspects
 - **Dual tokenization support**: We provide both RQ-VAE and RQ-KMeans implementations for item tokenization, allowing for experimentation with different quantization approaches
 
 **Content Embeddings:**
-- **LLaMA 7B for content embeddings**: We use LLaMA 7B model instead of T5 checkoint for generating content embeddings from item descriptions
+- **LLaMA 7B for content embeddings**: We use LLaMA 7B model instead of T5 checkpoint for generating content embeddings from item descriptions
 
 ## Future Work
 
