@@ -57,7 +57,7 @@ class EvalSampler:
         return len(self._dataset)
 
     def __getitem__(self, index):
-        sample = self._dataset[index]
+        sample = copy.deepcopy(self._dataset[index])
 
         item_sequence = sample['item.ids'][:-1]
         next_item = sample['item.ids'][-1]

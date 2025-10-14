@@ -12,20 +12,18 @@ class Dataset:
             train_sampler,
             validation_sampler,
             test_sampler,
-            num_users,
             num_items,
             max_sequence_length
     ):
         self._train_sampler = train_sampler
         self._validation_sampler = validation_sampler
         self._test_sampler = test_sampler
-        self._num_users = num_users
         self._num_items = num_items
         self._max_sequence_length = max_sequence_length
 
     @classmethod
     def create(cls, inter_json_path, max_sequence_length, sampler_type, is_extended=False):
-        max_user_id, max_item_id = 0, 0
+        max_item_id = 0
         train_dataset, validation_dataset, test_dataset = [], [], []
 
         with open(inter_json_path, 'r') as f:
@@ -34,7 +32,6 @@ class Dataset:
         for user_id_str, item_ids in user_interactions.items():
             user_id = int(user_id_str)
 
-            max_user_id = max(max_user_id, user_id)
             if item_ids:
                 max_item_id = max(max_item_id, max(item_ids))
 
@@ -61,7 +58,6 @@ class Dataset:
                     'item.ids': item_ids[:-2][-max_sequence_length:],
                     'item.length': len(item_ids[:-2][-max_sequence_length:])
                 })
-            assert len(item_ids[:-2][-max_sequence_length:]) == len(set(item_ids[:-2][-max_sequence_length:]))
 
             # sample = [1, 2, 3, 4, 5, 6, 7, 8, 9]
             validation_dataset.append({
@@ -70,7 +66,6 @@ class Dataset:
                 'item.ids': item_ids[:-1][-max_sequence_length:],
                 'item.length': len(item_ids[:-1][-max_sequence_length:])
             })
-            assert len(item_ids[:-1][-max_sequence_length:]) == len(set(item_ids[:-1][-max_sequence_length:]))
 
             # sample = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
             test_dataset.append({
@@ -79,12 +74,10 @@ class Dataset:
                 'item.ids': item_ids[-max_sequence_length:],
                 'item.length': len(item_ids[-max_sequence_length:])
             })
-            assert len(item_ids[-max_sequence_length:]) == len(set(item_ids[-max_sequence_length:]))
 
         LOGGER.info(f'Train dataset size: {len(train_dataset)}')
         LOGGER.info(f'Validation dataset size: {len(validation_dataset)}')
         LOGGER.info(f'Test dataset size: {len(test_dataset)}')
-        LOGGER.info(f'Max user id: {max_user_id}')
         LOGGER.info(f'Max item id: {max_item_id}')
 
         train_sampler = TrainSampler(train_dataset, sampler_type)
@@ -95,17 +88,12 @@ class Dataset:
             train_sampler=train_sampler,
             validation_sampler=validation_sampler,
             test_sampler=test_sampler,
-            num_users=max_user_id + 1,  # +1 added because our ids are 0-indexed
             num_items=max_item_id + 1,  # +1 added because our ids are 0-indexed
             max_sequence_length=max_sequence_length
         )
 
     def get_samplers(self):
         return self._train_sampler, self._validation_sampler, self._test_sampler
-
-    @property
-    def num_users(self):
-        return self._num_users
 
     @property
     def num_items(self):

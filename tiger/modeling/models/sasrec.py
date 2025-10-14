@@ -36,9 +36,6 @@ class SasRecModel(TorchModel):
 
         self._topk_k = topk_k
 
-        self._layernorm = nn.LayerNorm(embedding_dim, eps=layer_norm_eps)
-        self._dropout = nn.Dropout(dropout)
-
         transformer_encoder_layer = nn.TransformerEncoderLayer(
             d_model=embedding_dim,
             nhead=num_heads,
@@ -107,7 +104,7 @@ class SasRecModel(TorchModel):
                 'bd,nd->bn',
                 last_embeddings,
                 self._item_embeddings.weight
-            )  # (batch_size, num_items + 1)
+            )  # (batch_size, num_items)
 
             _, indices = torch.topk(candidate_scores, k=self._topk_k, dim=-1, largest=True)  # (batch_size, topk_k)
 
@@ -132,8 +129,6 @@ class SasRecModel(TorchModel):
         position_embeddings[~mask] = 0
 
         embeddings = embeddings + position_embeddings  # (batch_size, seq_len, embedding_dim)
-        embeddings = self._layernorm(embeddings)  # (batch_size, seq_len, embedding_dim)
-        embeddings = self._dropout(embeddings)  # (batch_size, seq_len, embedding_dim)
         embeddings[~mask] = 0
         causal_mask = nn.Transformer.generate_square_subsequent_mask(seq_len).bool().to(embeddings.device)  # (seq_len, seq_len)
         embeddings = self._encoder(

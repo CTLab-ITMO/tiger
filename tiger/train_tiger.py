@@ -79,7 +79,7 @@ def main():
         d_kv=config['model']['d_kv'],
         dropout=config['model']['dropout'],
         layer_norm_eps=config['model']['layer_norm_eps'],
-        initializer_range=config['model']['initializer_range']
+        initializer_range=config['model']['initializer_range'],
     ).to(utils.DEVICE)
 
     loss_function = IdentityLoss(
@@ -87,7 +87,7 @@ def main():
         output_prefix='loss'
     )  # Passes through the loss computed inside the model without modification
 
-    optimizer = torch.optim.Adam(
+    optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config['optimizer']['lr'],
     )

@@ -1,8 +1,70 @@
-import torch
-from transformers import T5ForConditionalGeneration, T5Config
+import json
 
-from ..utils import create_masked_tensor
+import torch
+from transformers import T5ForConditionalGeneration, T5Config, LogitsProcessor
+
+from ..utils import create_masked_tensor, DEVICE
 from ..models import TorchModel
+
+
+class CorrectItemsLogitsProcessor(LogitsProcessor):
+    def __init__(self, num_codebooks, codebook_size, inter_path, visited_items):
+        self.num_codebooks = num_codebooks
+        self.codebook_size = codebook_size
+
+        with open(inter_path, 'r') as f:
+            mapping = json.load(f)
+
+        semantic_ids = []
+        for i in range(len(mapping)):
+            assert len(mapping[str(i)]) == num_codebooks, 'All semantic ids must have the same length'
+            semantic_ids.append(mapping[str(i)])
+        
+        self.index_semantic_ids = torch.tensor(semantic_ids, dtype=torch.long, device=DEVICE)  # (num_items, semantic_ids)
+        self.index_semantic_ids += torch.arange(num_codebooks, device=DEVICE)[None] * codebook_size  # (num_items, semantic_ids)
+        
+        batch_size, _ = visited_items.shape
+
+        self.index_semantic_ids = torch.tile(self.index_semantic_ids[None], dims=[batch_size, 1, 1])  # (batch_size, num_items, semantic_ids)
+
+        index = visited_items[..., None].tile(dims=[1, 1, num_codebooks])  # (batch_size, seq_len, semantic_ids)
+
+        self.index_semantic_ids = torch.scatter(
+            input=self.index_semantic_ids,
+            dim=1,
+            index=index,
+            src=torch.zeros_like(index)  # Unexisting SIDs
+        )  # (batch_size, num_items, semantic_ids)
+    
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
+        next_sid_codebook_num = (torch.minimum((input_ids[:, -1].max() // self.codebook_size), torch.as_tensor(self.num_codebooks - 1)).item() + 1) % self.num_codebooks
+
+        if next_sid_codebook_num == 0:
+            scores[:, self.codebook_size:] = -torch.inf
+        else:
+            current_prefixes = input_ids[:, -next_sid_codebook_num:]  # (batch_size * num_beams, sid_len)
+            possible_next_items_mask = (
+                torch.eq(
+                    current_prefixes[:, None, :], 
+                    torch.tile(self.index_semantic_ids[:, :, :next_sid_codebook_num], dims=[100, 1, 1])
+                ).long().sum(dim=-1) == next_sid_codebook_num
+            )  # (batch_size * num_beams, num_items)
+
+            a = torch.tile(self.index_semantic_ids[:, :, next_sid_codebook_num], dims=[100, 1])  # (batch_size * num_beams, num_items)
+            a[~possible_next_items_mask] = 0
+            scores_mask = torch.zeros_like(scores).bool()
+            scores_mask = torch.scatter_add(
+                input=scores_mask,
+                dim=-1,
+                index=a,
+                src=torch.ones_like(a).bool()
+            )
+            scores_mask[:, :next_sid_codebook_num * self.codebook_size] = 0
+            scores_mask[:, (next_sid_codebook_num + 1) * self.codebook_size:] = 0
+            scores[~(scores_mask.bool())] = -torch.inf
+        
+        return scores
+
 
 
 class TigerModel(TorchModel):
@@ -17,13 +79,14 @@ class TigerModel(TorchModel):
             num_encoder_layers,
             num_decoder_layers,
             dim_feedforward,
-            num_beams=50,
+            num_beams=100,
             num_return_sequences=20,
             d_kv=64,
             layer_norm_eps=1e-9,
             activation='relu',
-            dropout=0.0,
+            dropout=0.1,
             initializer_range=0.02,
+            logits_processor=None
     ):
         super().__init__()
         self._embedding_dim = embedding_dim
@@ -41,6 +104,7 @@ class TigerModel(TorchModel):
         self._dropout = dropout
         self._sem_id_len = sem_id_len
         self.user_ids_count = user_ids_count
+        self.logits_processor = logits_processor
 
         unified_vocab_size = codebook_size * self._sem_id_len + self.user_ids_count + 10  # 10 for utilities
         self.config = T5Config(
@@ -134,6 +198,10 @@ class TigerModel(TorchModel):
 
             return model_output
         else:
+            visited_items, _ = create_masked_tensor(
+                data=inputs['item.ids'],
+                lengths=inputs['item.length']
+            )  # (batch_size, seq_len)
             output = self.model.generate(
                 input_ids=input_semantic_ids,
                 attention_mask=attention_mask,
@@ -144,7 +212,8 @@ class TigerModel(TorchModel):
                 eos_token_id=self.config.eos_token_id,
                 pad_token_id=self.config.pad_token_id,
                 do_sample=False,
-                early_stopping=False
+                early_stopping=False,
+                logits_processor=[self.logits_processor(visited_items=visited_items)] if self.logits_processor is not None else [],
             )
             return {
                 'predictions': output[:, 1:].reshape(-1, self._num_return_sequences, self._sem_id_len)

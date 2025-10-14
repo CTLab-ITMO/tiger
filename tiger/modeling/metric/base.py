@@ -12,7 +12,7 @@ class NDCGMetric:
         assert labels.shape[0] == predictions.shape[0]
 
         hits = torch.eq(predictions, labels[..., None]).float()  # (batch_size, top_k_indices)
-        discount_factor = 1 / torch.log2(torch.arange(1, self._k + 1, 1).float() + 1.).to(hits.device)  # (k)
+        discount_factor = 1. / torch.log2(torch.arange(1, self._k + 1).float() + 1.).to(hits.device)  # (k)
         dcg = torch.einsum('bk,k->b', hits, discount_factor)  # (batch_size)
 
         return dcg.cpu().tolist()

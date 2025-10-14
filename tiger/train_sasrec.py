@@ -81,7 +81,7 @@ def main():
         output_prefix='loss'
     )
 
-    optimizer = torch.optim.Adam(
+    optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=config['optimizer']['lr'],
     )
