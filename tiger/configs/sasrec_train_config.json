@@ -1,0 +1,26 @@
+{
+  "experiment_name": "sasrec_beauty",
+  "dataset": {
+    "inter_json_path": "../data/Beauty/inter.json",
+    "max_sequence_length": 20,
+    "sampler_type": "sasrec"
+  },
+  "dataloader": {
+    "train_batch_size": 256,
+    "validation_batch_size": 256
+  },
+  "model": {
+    "embedding_dim": 64,
+    "num_heads": 2,
+    "num_layers": 2,
+    "dim_feedforward": 256,
+    "dropout": 0.3,
+    "activation": "relu",
+    "top_k": 20,
+    "layer_norm_eps": 1e-8,
+    "initializer_range": 0.02
+  },
+  "optimizer": {
+    "lr": 0.001
+  }
+}

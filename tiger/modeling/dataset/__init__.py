@@ -1,1 +1,1 @@
-from .base import BaseDataset
+from .base import Dataset

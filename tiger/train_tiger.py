@@ -1,236 +1,131 @@
-import copy
 import json
-import os
 
 import torch
 from torch.utils.data import DataLoader
 
 from modeling import utils
-from modeling.callbacks import CompositeCallback
-from modeling.callbacks.base import MetricCallback, ValidationCallback, EvalCallback
-from modeling.dataloader import TorchDataloader
-from modeling.dataloader.batch_processors import LetterBatchProcessor
-from modeling.dataset.base import LetterFullDataset
-from modeling.loss import IdentityMapLoss, CompositeLoss
-from modeling.metric.base import NDCGSemanticMetric, RecallSemanticMetric, CoverageSemanticMetric
-from modeling.models import TigerModelT5
-from modeling.optimizer.base import BasicOptimizer, OPTIMIZERS
-from modeling.utils import parse_args, create_logger, fix_random_seed, tensorboards, DEVICE
-
-logger = create_logger(name=__name__)
-seed_val = 42
+from modeling.dataloader import BatchProcessor
+from modeling.dataset import Dataset
+from modeling.loss import IdentityLoss
+from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric
+from modeling.models import TigerModel
+from modeling.utils import parse_args, create_logger, fix_random_seed
+from modeling.trainer import Trainer
 
 
-def create_ranking_metrics(dataset, codebook_size, num_codebooks):
-    print("Logs codebook size: {}, num codebooks: {}".format(codebook_size, num_codebooks))
-    return {
-        "ndcg@5": NDCGSemanticMetric(5, codebook_size, num_codebooks),
-        "ndcg@10": NDCGSemanticMetric(10, codebook_size, num_codebooks),
-        "ndcg@20": NDCGSemanticMetric(20, codebook_size, num_codebooks),
-        "recall@5": RecallSemanticMetric(5, codebook_size, num_codebooks),
-        "recall@10": RecallSemanticMetric(10, codebook_size, num_codebooks),
-        "recall@20": RecallSemanticMetric(20, codebook_size, num_codebooks),
-        "coverage@5": CoverageSemanticMetric(5, codebook_size, num_codebooks, dataset.meta['num_items']),
-        "coverage@10": CoverageSemanticMetric(10, codebook_size, num_codebooks, dataset.meta['num_items']),
-        "coverage@20": CoverageSemanticMetric(20, codebook_size, num_codebooks, dataset.meta['num_items'])
-    }
-
-
-def train(dataloader, model, optimizer, loss_function, callback, epoch_cnt=None, step_cnt=None, best_metric=None):
-    step_num = 0
-    epoch_num = 0
-    current_metric = 0
-
-    epochs_threshold = 40
-
-    best_epoch = 0
-    best_checkpoint = None
-
-    logger.debug('Start training...')
-
-    while (epoch_cnt is None or epoch_num < epoch_cnt) and (step_cnt is None or step_num < step_cnt):
-        if best_epoch + epochs_threshold < epoch_num:
-            logger.debug('There is no progress during {} epochs. Finish training'.format(epochs_threshold))
-            break
-
-        logger.debug(f'Start epoch {epoch_num}')
-        for step, batch in enumerate(dataloader):
-            batch_ = batch
-
-            model.train()
-
-            for key, values in batch_.items():
-                batch_[key] = batch_[key].to(utils.DEVICE)
-
-            batch_.update(model(batch_))
-            loss = loss_function(batch_)
-
-            optimizer.step(loss)
-            callback(batch_, step_num)
-            step_num += 1
-
-            if best_metric is None:
-                # Take the last model
-                best_checkpoint = copy.deepcopy(model.state_dict())
-                best_epoch = epoch_num
-            elif best_checkpoint is None or best_metric in batch_ and current_metric <= batch_[best_metric]:
-                # If it is the first checkpoint, or it is the best checkpoint
-                current_metric = batch_[best_metric]
-                best_checkpoint = copy.deepcopy(model.state_dict())
-                best_epoch = epoch_num
-
-        epoch_num += 1
-    logger.debug('Training procedure has been finished!')
-    return best_checkpoint
+LOGGER = create_logger(name=__name__)
+SEED_VALUE = 42
 
 
 def main():
-    fix_random_seed(seed_val)
+    fix_random_seed(SEED_VALUE)
     config = parse_args()
 
-    utils.GLOBAL_TENSORBOARD_WRITER = tensorboards.TensorboardWriter(config['experiment_name'])
+    LOGGER.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
+    LOGGER.debug('Current DEVICE: {}'.format(utils.DEVICE))
 
-    logger.debug('Training config: \n{}'.format(json.dumps(config, indent=2)))
-    logger.debug('Current DEVICE: {}'.format(DEVICE))
-
-    dataset = LetterFullDataset.create_from_config(config['dataset'])
+    dataset = Dataset.create(
+        inter_json_path=config['dataset']['inter_json_path'],
+        max_sequence_length=config['dataset']['max_sequence_length'],
+        sampler_type=config['dataset']['sampler_type'],
+        is_extended=True
+    )
 
     train_sampler, validation_sampler, test_sampler = dataset.get_samplers()
 
-    train_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=train_sampler,
-            batch_size=config['dataloader']['train']["batch_size"],
-            drop_last=True,
-            shuffle=True,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['train']["batch_processor"])
-        )
+    num_codebooks = config['dataset']['num_codebooks']
+    user_ids_count = config['model']['user_ids_count']
+    batch_processor = BatchProcessor.create(
+        config['dataset']['index_json_path'], num_codebooks, user_ids_count
     )
 
-    validation_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=validation_sampler,
-            batch_size=config['dataloader']['validation']["batch_size"],
-            drop_last=False,
-            shuffle=False,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
-        )
+    train_dataloader = DataLoader(
+        dataset=train_sampler,
+        batch_size=config['dataloader']['train_batch_size'],
+        drop_last=True,
+        shuffle=True,
+        collate_fn=batch_processor
     )
 
-    eval_dataloader = TorchDataloader(
-        dataloader=DataLoader(
-            dataset=test_sampler,
-            batch_size=config['dataloader']['validation']["batch_size"],
-            drop_last=False,
-            shuffle=False,
-            collate_fn=LetterBatchProcessor.create_from_config(config['dataloader']['validation']["batch_processor"])
-        )
+    validation_dataloader = DataLoader(
+        dataset=validation_sampler,
+        batch_size=config['dataloader']['validation_batch_size'],
+        drop_last=False,
+        shuffle=False,
+        collate_fn=batch_processor
     )
 
-    model = TigerModelT5.create_from_config(config['model'], **dataset.meta).to(DEVICE)
-
-    if 'checkpoint' in config:
-        checkpoint_path = os.path.join('../checkpoints', f'{config["checkpoint"]}.pth')
-        logger.debug('Loading checkpoint from {}'.format(checkpoint_path))
-        checkpoint = torch.load(checkpoint_path)
-        print(checkpoint.keys())
-        model.load_state_dict(checkpoint)
-
-    total_params = sum(p.numel() for p in model.parameters())
-    print(f"Total model parameters: {total_params}")
-
-    loss_function = CompositeLoss(
-        losses=[
-            IdentityMapLoss(
-                predictions_prefix="loss",
-                output_prefix="loss"
-            )
-        ],
-        weights=[1.0],
-        output_prefix="loss"
+    eval_dataloader = DataLoader(
+        dataset=test_sampler,
+        batch_size=config['dataloader']['validation_batch_size'],
+        drop_last=False,
+        shuffle=False,
+        collate_fn=batch_processor
     )
 
-    optimizer_cfg = copy.deepcopy(config['optimizer'])
-    _optimizer = OPTIMIZERS[optimizer_cfg.pop('type')](
+    model = TigerModel(
+        embedding_dim=config['model']['embedding_dim'],
+        codebook_size=config['model']['codebook_size'],
+        sem_id_len=num_codebooks,
+        user_ids_count=user_ids_count,
+        num_positions=config['model']['num_positions'],
+        num_heads=config['model']['num_heads'],
+        num_encoder_layers=config['model']['num_encoder_layers'],
+        num_decoder_layers=config['model']['num_decoder_layers'],
+        dim_feedforward=config['model']['dim_feedforward'],
+        num_beams=config['model']['num_beams'],
+        num_return_sequences=config['model']['top_k'],
+        activation=config['model']['activation'],
+        d_kv=config['model']['d_kv'],
+        dropout=config['model']['dropout'],
+        layer_norm_eps=config['model']['layer_norm_eps'],
+        initializer_range=config['model']['initializer_range'],
+    ).to(utils.DEVICE)
+
+    loss_function = IdentityLoss(
+        predictions_prefix='loss',
+        output_prefix='loss'
+    )  # Passes through the loss computed inside the model without modification
+
+    optimizer = torch.optim.AdamW(
         model.parameters(),
-        **optimizer_cfg
-    )
-    optimizer = BasicOptimizer(
-        model=model,
-        optimizer=_optimizer,
-        scheduler=None,
-        clip_grad_threshold=config.get('clip_grad_threshold', None)
+        lr=config['optimizer']['lr'],
     )
 
-    callback = CompositeCallback(
-        model=model,
+    codebook_size = config['model']['codebook_size']
+    ranking_metrics = {
+        'ndcg@5': NDCGSemanticMetric(5, codebook_size, num_codebooks),
+        'ndcg@10': NDCGSemanticMetric(10, codebook_size, num_codebooks),
+        'ndcg@20': NDCGSemanticMetric(20, codebook_size, num_codebooks),
+        'recall@5': RecallSemanticMetric(5, codebook_size, num_codebooks),
+        'recall@10': RecallSemanticMetric(10, codebook_size, num_codebooks),
+        'recall@20': RecallSemanticMetric(20, codebook_size, num_codebooks)
+    }
+
+    LOGGER.debug('Everything is ready for training process!')
+
+    trainer = Trainer(
+        experiment_name=config['experiment_name'],
         train_dataloader=train_dataloader,
         validation_dataloader=validation_dataloader,
         eval_dataloader=eval_dataloader,
-        optimizer=optimizer,
-        callbacks=[
-            # Метрики для тренировки (логирование каждый шаг)
-            MetricCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=1,
-                metrics=None,  # Только loss
-                loss_prefix="loss"
-            ),
-
-            # Валидация каждые 64 шага
-            ValidationCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=64,
-                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
-                pred_prefix="predictions",
-                labels_prefix="labels",
-                loss_prefix=None
-            ),
-
-            # Финальная оценка каждые 256 шагов
-            EvalCallback(
-                model=model,
-                train_dataloader=train_dataloader,
-                validation_dataloader=validation_dataloader,
-                eval_dataloader=eval_dataloader,
-                optimizer=optimizer,
-                on_step=256,
-                metrics=create_ranking_metrics(dataset, codebook_size=config['model']['codebook_size'], num_codebooks=4),
-                pred_prefix="predictions",
-                labels_prefix="labels",
-                loss_prefix=None
-            )
-        ]
-    )
-
-    # TODO add verbose option for all callbacks, multiple optimizer options (???)
-    # TODO create pre/post callbacks
-    logger.debug('Everything is ready for training process!')
-
-    # Train process
-    _ = train(
-        dataloader=train_dataloader,
         model=model,
         optimizer=optimizer,
         loss_function=loss_function,
-        callback=callback,
+        ranking_metrics=ranking_metrics,
         epoch_cnt=config.get('train_epochs_num'),
         step_cnt=config.get('train_steps_num'),
-        best_metric=config.get('best_metric')
+        best_metric='validation/ndcg@20',
+        epochs_threshold=config.get('early_stopping_threshold', 40),
+        valid_step=256,
+        eval_step=256,
+        checkpoint=config.get('checkpoint', None),
     )
 
-    logger.debug('Saving model...')
-    checkpoint_path = '../checkpoints/{}_final_state.pth'.format(config['experiment_name'])
-    torch.save(model.state_dict(), checkpoint_path)
-    logger.debug('Saved model as {}'.format(checkpoint_path))
+    trainer.train()
+    trainer.save()
+
+    LOGGER.debug('Training finished!')
 
 
 if __name__ == '__main__':

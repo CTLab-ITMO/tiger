@@ -1,15 +1,35 @@
 import argparse
+import datetime
 import json
 import logging
+import os
 import random
-from pathlib import Path
 
 import numpy as np
 import torch
-
-from .tensorboards import GLOBAL_TENSORBOARD_WRITER, LOGS_DIR
+from torch.utils.tensorboard import SummaryWriter
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+
+
+class TensorboardWriter(SummaryWriter):
+    def __init__(
+            self,
+            experiment_name,
+            logs_dir='../tensorboard_logs',
+            use_time=True
+        ):
+        self._experiment_name = experiment_name
+        os.makedirs(logs_dir, exist_ok=True)
+        super().__init__(
+            log_dir=os.path.join(
+                logs_dir,
+                f'{experiment_name}_{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M' if use_time else '')}'
+            )
+        )
+
+    def add_scalar(self, *args, **kwargs):
+        super().add_scalar(*args, **kwargs)
 
 
 def parse_args():
@@ -41,12 +61,6 @@ def fix_random_seed(seed):
     torch.cuda.manual_seed_all(seed)
 
 
-def maybe_to_list(values):
-    if not isinstance(values, list):
-        values = [values]
-    return values
-
-
 def get_activation_function(name, **kwargs):
     if name == 'relu':
         return torch.nn.ReLU()
@@ -56,42 +70,11 @@ def get_activation_function(name, **kwargs):
         return torch.nn.ELU(alpha=float(kwargs.get('alpha', 1.0)))
     elif name == 'leaky':
         return torch.nn.LeakyReLU(negative_slope=float(kwargs.get('negative_slope', 1e-2)))
-    elif name == 'sigmoid':
-        return torch.nn.Sigmoid()
-    elif name == 'tanh':
-        return torch.nn.Tanh()
-    elif name == 'softmax':
-        return torch.nn.Softmax()
-    elif name == 'softplus':
-        return torch.nn.Softplus(beta=int(kwargs.get('beta', 1.0)), threshold=int(kwargs.get('threshold', 20)))
-    elif name == 'softmax_logit':
-        return torch.nn.LogSoftmax()
     else:
         raise ValueError('Unknown activation function name `{}`'.format(name))
 
 
-def dict_to_str(x, params):
-    parts = []
-    for k, v in x.items():
-        if k in params:
-            if isinstance(v, dict):
-                # part = '_'.join([f'{k}-{sub_part}' for sub_part in dict_to_str(v, params[k]).split('_')])
-                part = '_'.join([f'{sub_part}' for sub_part in dict_to_str(v, params[k]).split('_')])
-            elif isinstance(v, tuple) or isinstance(v, list):
-                sub_strings = []
-                for i, sub_value in enumerate(v):
-                    sub_strings.append(f'({i})_{dict_to_str(v[i], params[k][i])}')
-                part = f'({"_".join(sub_strings)})'
-            else:
-                # part = f'{k}-{v}'
-                part = f'{v}'
-            parts.append(part)
-        else:
-            continue
-    return '_'.join(parts).replace('.', '-')
-
-
-def create_masked_tensor(data, lengths, is_tiger=False):
+def create_masked_tensor(data, lengths, is_right_aligned=False):
     batch_size = lengths.shape[0]
     max_sequence_length = lengths.max().item()
 
@@ -112,49 +95,8 @@ def create_masked_tensor(data, lengths, is_tiger=False):
         device=DEVICE
     )[None].tile([batch_size, 1]) < lengths[:, None]  # (batch_size, max_seq_len)
 
-    if is_tiger:
+    if is_right_aligned:
         mask = torch.flip(mask, dims=[-1])
     padded_tensor[mask] = data
 
     return padded_tensor, mask
-
-def save_sasrec_embeds(model, output_path):
-    with torch.no_grad():
-        item_embeddings = model._item_embeddings.weight.data.cpu().numpy()[1:]  # (num_items, embedding_dim)
-        tensor_embeddings = torch.from_numpy(item_embeddings).float()
-    assert tensor_embeddings.shape == (model._num_items, model._embedding_dim)
-    torch.save(tensor_embeddings, output_path)
-
-
-def generate_inter_json(user_interactions_path, output_dir):
-    output_path = Path(output_dir)
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    inter_dict = {}
-
-    with open(user_interactions_path, "r", encoding='utf-8') as f:
-        for line in f:
-            parts = line.strip().split()
-            if not parts:
-                continue
-
-            user_id_str = int(parts[0])
-            item_id_strs = parts[1:]
-            # Преобразуем все item_id к int
-            user_items = []
-            for item_str in item_id_strs:
-                try:
-                    user_items.append(int(item_str) - 1)
-                except ValueError:
-                    continue
-
-            if user_items:
-                inter_dict[user_id_str - 1] = user_items
-
-    inter_path = output_path / "all-data-inter.json"
-    with open(inter_path, "w", encoding='utf-8') as f:
-        json.dump(inter_dict, f, indent=4, ensure_ascii=False)
-
-    print(f"inter.json path: {inter_path}")
-    print(f"Total users count: {len(inter_dict)}")
-    return inter_path

@@ -1,66 +1,64 @@
 import torch
-from ..models import SequentialTorchModel
+import torch.nn as nn
+
+from ..utils import create_masked_tensor
+from ..models import TorchModel
 
 
-class SasRecModel(SequentialTorchModel):
-
+class SasRecModel(TorchModel):
     def __init__(
             self,
-            sequence_prefix,
-            positive_prefix,
             num_items,
             max_sequence_length,
             embedding_dim,
             num_heads,
             num_layers,
             dim_feedforward,
+            activation,
+            topk_k,
             dropout=0.0,
-            activation='relu',
             layer_norm_eps=1e-9,
             initializer_range=0.02
     ):
-        super().__init__(
-            num_items=num_items,
-            max_sequence_length=max_sequence_length,
-            embedding_dim=embedding_dim,
-            num_heads=num_heads,
-            num_layers=num_layers,
+        super().__init__()
+        self._num_items = num_items
+        self._num_heads = num_heads
+        self._embedding_dim = embedding_dim
+
+        self._item_embeddings = nn.Embedding(
+            num_embeddings=num_items,
+            embedding_dim=embedding_dim
+        )
+        self._position_embeddings = nn.Embedding(
+            num_embeddings=max_sequence_length,
+            embedding_dim=embedding_dim
+        )
+
+        self._topk_k = topk_k
+
+        transformer_encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embedding_dim,
+            nhead=num_heads,
             dim_feedforward=dim_feedforward,
             dropout=dropout,
             activation=activation,
             layer_norm_eps=layer_norm_eps,
-            is_causal=True
+            batch_first=True
         )
-        self._sequence_prefix = sequence_prefix
-        self._positive_prefix = positive_prefix
+        self._encoder = nn.TransformerEncoder(transformer_encoder_layer, num_layers)
 
         self._init_weights(initializer_range)
 
-    @classmethod
-    def create_from_config(cls, config, **kwargs):
-        return cls(
-            sequence_prefix=config['sequence_prefix'],
-            positive_prefix=config['positive_prefix'],
-            num_items=kwargs['num_items'],
-            max_sequence_length=kwargs['max_sequence_length'],
-            embedding_dim=config['embedding_dim'],
-            num_heads=config.get('num_heads', int(config['embedding_dim'] // 64)),
-            num_layers=config['num_layers'],
-            dim_feedforward=config.get('dim_feedforward', 4 * config['embedding_dim']),
-            dropout=config.get('dropout', 0.0),
-            initializer_range=config.get('initializer_range', 0.02)
-        )
-
     def forward(self, inputs):
-        all_sample_events = inputs['{}.ids'.format(self._sequence_prefix)]  # (all_batch_events)
-        all_sample_lengths = inputs['{}.length'.format(self._sequence_prefix)]  # (batch_size)
+        all_sample_events = inputs['item.ids']  # (all_batch_events)
+        all_sample_lengths = inputs['item.length']  # (batch_size)
 
         embeddings, mask = self._apply_sequential_encoder(
             all_sample_events, all_sample_lengths
         )  # (batch_size, seq_len, embedding_dim), (batch_size, seq_len)
 
         if self.training:  # training mode
-            all_positive_sample_events = inputs['{}.ids'.format(self._positive_prefix)]  # (all_batch_events)
+            all_positive_sample_events = inputs['labels.ids']  # (all_batch_events)
 
             all_sample_embeddings = embeddings[mask]  # (all_batch_events, embedding_dim)
 
@@ -82,41 +80,61 @@ class SasRecModel(SequentialTorchModel):
             negative_scores = torch.gather(
                 input=all_scores,
                 dim=1,
-                index=torch.randint(low=0, high=all_scores.shape[1], size=all_positive_sample_events.shape, device=all_positive_sample_events.device)[..., None]
+                index=torch.randint(
+                    low=0,
+                    high=all_scores.shape[1],
+                    size=all_positive_sample_events.shape,
+                    device=all_positive_sample_events.device
+                )[..., None]
             )[:, 0]  # (all_batch_items)
-
-            # sample_ids, _ = create_masked_tensor(
-            #     data=all_sample_events,
-            #     lengths=all_sample_lengths
-            # )  # (batch_size, seq_len)
-
-            # sample_ids = torch.repeat_interleave(sample_ids, all_sample_lengths, dim=0)  # (all_batch_events, seq_len)
-
-            # negative_scores = torch.scatter(
-            #     input=all_scores,
-            #     dim=1,
-            #     index=sample_ids,
-            #     src=torch.ones_like(sample_ids) * (-torch.inf)
-            # )  # (all_batch_events, num_items)
 
             return {
                 'positive_scores': positive_scores,
                 'negative_scores': negative_scores
             }
         else:  # eval mode
-            last_embeddings = self._get_last_embedding(embeddings, mask)  # (batch_size, embedding_dim)
+            lengths = torch.sum(mask, dim=-1) - 1  # (batch_size)
+            last_masks = mask.gather(dim=1, index=lengths[:, None])  # (batch_size, 1)
+            lengths = torch.tile(lengths[:, None, None], (1, 1, embeddings.shape[-1]))  # (batch_size, 1, emb_dim)
+            last_embeddings = embeddings.gather(dim=1, index=lengths)  # (batch_size, 1, emb_dim)
+            last_embeddings = last_embeddings[last_masks]  # (batch_size, emb_dim)
+
             # b - batch_size, n - num_candidates, d - embedding_dim
             candidate_scores = torch.einsum(
                 'bd,nd->bn',
                 last_embeddings,
                 self._item_embeddings.weight
-            )  # (batch_size, num_items + 1)
+            )  # (batch_size, num_items)
 
-            _, indices = torch.topk(
-                candidate_scores,
-                k=20, dim=-1, largest=True
-            )  # (batch_size, 20)
+            _, indices = torch.topk(candidate_scores, k=self._topk_k, dim=-1, largest=True)  # (batch_size, topk_k)
 
-            return {
-                'predictions': indices
-            }
+            return {'predictions': indices}
+
+    def _apply_sequential_encoder(self, events, lengths):
+        embeddings = self._item_embeddings(events)  # (all_batch_events, embedding_dim)
+
+        embeddings, mask = create_masked_tensor(
+            data=embeddings,
+            lengths=lengths
+        )  # (batch_size, seq_len, embedding_dim), (batch_size, seq_len)
+
+        batch_size = mask.shape[0]
+        seq_len = mask.shape[1]
+
+        positions = torch.arange(
+            start=0, end=seq_len, device=mask.device
+        )[None].expand(batch_size, -1)  # (batch_size, seq_len)
+
+        position_embeddings = self._position_embeddings(positions)   # (batch_size, seq_len, embedding_dim)
+        position_embeddings[~mask] = 0
+
+        embeddings = embeddings + position_embeddings  # (batch_size, seq_len, embedding_dim)
+        embeddings[~mask] = 0
+        causal_mask = nn.Transformer.generate_square_subsequent_mask(seq_len).bool().to(embeddings.device)  # (seq_len, seq_len)
+        embeddings = self._encoder(
+            src=embeddings,
+            mask=causal_mask,
+            src_key_padding_mask=~mask
+        )  # (batch_size, seq_len, embedding_dim)
+
+        return embeddings, mask
