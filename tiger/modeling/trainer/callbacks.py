@@ -1,14 +1,12 @@
 import numpy as np
 import torch
 
-from ..metric import CoverageMetric
 from ..utils import create_logger, DEVICE
 
 LOGGER = create_logger(name=__name__)
 
 
 class MetricCallback:
-
     def __init__(self, tensorboard_writer, on_step, loss_prefix):
         self._tensorboard_writer = tensorboard_writer
         self._on_step = on_step
@@ -25,7 +23,6 @@ class MetricCallback:
 
 
 class InferenceCallback:
-
     def __init__(
             self,
             tensorboard_writer,
@@ -54,9 +51,8 @@ class InferenceCallback:
                 running_params[metric_name] = []
 
             self._model.eval()
-            with torch.no_grad():
+            with torch.inference_mode():
                 for batch in self._dataloader:
-
                     for key, value in batch.items():
                         batch[key] = value.to(DEVICE)
 
@@ -68,10 +64,6 @@ class InferenceCallback:
                             pred_prefix=self._pred_prefix,
                             labels_prefix=self._labels_prefix,
                         ))
-
-            for metric_name, metric_function in self._metrics.items():
-                if isinstance(metric_function, CoverageMetric):
-                    running_params[metric_name] = metric_function.reduce(running_params[metric_name])
 
             for label, value in running_params.items():
                 inputs[f'{self._step_name}/{label}'] = np.mean(value)

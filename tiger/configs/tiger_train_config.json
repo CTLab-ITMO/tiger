@@ -1,11 +1,11 @@
 {
-  "experiment_name": "tiger_beauty_kmeans",
+  "experiment_name": "tiger_beauty",
   "dataset": {
     "inter_json_path": "../data/Beauty/inter.json",
-    "index_json_path": "../data/Beauty/index_kmeans.json",
+    "index_json_path": "../data/Beauty/index_rqkmeans.json",
     "num_codebooks": 4,
     "max_sequence_length": 20,
-    "sampler_type": "last_item"
+    "sampler_type": "tiger"
   },
   "dataloader": {
     "train_batch_size": 256,
@@ -20,14 +20,15 @@
     "num_encoder_layers": 4,
     "num_decoder_layers": 4,
     "dim_feedforward": 1024,
-    "num_beams": 50,
-    "num_return_sequences": 20,
     "d_kv": 64,
     "dropout": 0.1,
+    "activation": "relu",
+    "num_beams": 100,
+    "top_k": 20,
+    "layer_norm_eps": 1e-6,
     "initializer_range": 0.02
   },
   "optimizer": {
-    "type": "adam",
-    "lr": 3e-4
+    "lr": 0.0003
   }
 }

@@ -24,7 +24,7 @@ class Trainer:
             step_cnt=None,
             best_metric=None,
             epochs_threshold=40,
-            valid_step=64,
+            valid_step=256,
             eval_step=256,
             checkpoint_dir='../checkpoints',
             checkpoint=None
@@ -91,33 +91,35 @@ class Trainer:
                 break
 
             LOGGER.debug(f'Start epoch {epoch_num}')
-            for step, batch in enumerate(self._train_dataloader):
-                batch_ = batch
-
+            for batch in self._train_dataloader:
                 self._model.train()
 
-                for key, values in batch_.items():
-                    batch_[key] = batch_[key].to(DEVICE)
+                for key, values in batch.items():
+                    batch[key] = values.to(DEVICE)
 
-                batch_.update(self._model(batch_))
-                loss = self._loss_function(batch_)
+                batch.update(self._model(batch))
+                loss = self._loss_function(batch)
 
-                self._optimizer.step(loss)
+                self._optimizer.zero_grad()
+                loss.backward()
+                self._optimizer.step()
 
-                self._metric_callback(batch_, step_num)
-                self._validation_callback(batch_, step_num)
-                self._eval_callback(batch_, step_num)
+                self._metric_callback(batch, step_num)
+                self._validation_callback(batch, step_num)
+                self._eval_callback(batch, step_num)
+
+                if self._best_metric is None:  # If no best metric is provided last checkpoint is taken
+                    best_checkpoint = copy.deepcopy(self._model.state_dict())
+                    best_epoch = epoch_num
+                elif (
+                    best_checkpoint is None  # If no best checkpoint exists this one is taken
+                    or self._best_metric in batch and current_metric <= batch[self._best_metric]  # or if metrics improved compared to previous one
+                ):
+                    current_metric = batch[self._best_metric]
+                    best_checkpoint = copy.deepcopy(self._model.state_dict())
+                    best_epoch = epoch_num
 
                 step_num += 1
-
-                if self._best_metric is None:
-                    best_checkpoint = copy.deepcopy(self._model.state_dict())
-                    best_epoch = epoch_num
-                elif (best_checkpoint is None
-                      or self._best_metric in batch_ and current_metric <= batch_[self._best_metric]):
-                    current_metric = batch_[self._best_metric]
-                    best_checkpoint = copy.deepcopy(self._model.state_dict())
-                    best_epoch = epoch_num
 
             epoch_num += 1
         LOGGER.debug('Training procedure has been finished!')
