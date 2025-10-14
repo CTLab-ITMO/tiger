@@ -1,4 +1,4 @@
-# TIGER-pytorch
+# Recommender Systems with Generative Retrieval
 
 This is an external implementation of the TIGER model in PyTorch. The original model is described in the NeurIPS '23 paper **"Recommender Systems with Generative Retrieval"** by Shashank Rajput, Nikhil Mehta, Anima Singh, Raghunandan H. Keshavan, Trung Vu, Lukasz Heldt, Lichan Hong, Yi Tay, Vinh Q. Tran, Jonah Samost, Maciej Kula, Ed H. Chi, and Maheswaran Sathiamoorthy.
 
