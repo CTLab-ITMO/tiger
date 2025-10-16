@@ -3,8 +3,8 @@ import json
 import torch
 from transformers import T5ForConditionalGeneration, T5Config, LogitsProcessor
 
-from ..utils import create_masked_tensor, DEVICE
-from ..models import TorchModel
+from modeling.models import TorchModel
+from modeling.utils import DEVICE, create_masked_tensor
 
 
 class CorrectItemsLogitsProcessor(LogitsProcessor):

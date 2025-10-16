@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from ..utils import create_logger, DEVICE
+from modeling.utils import create_logger, DEVICE
 
 LOGGER = create_logger(name=__name__)
 

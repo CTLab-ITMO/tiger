@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from ..utils import create_masked_tensor
-from ..models import TorchModel
+from modeling.models import TorchModel
+from modeling.utils import create_masked_tensor
 
 
 class SasRecModel(TorchModel):

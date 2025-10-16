@@ -3,8 +3,8 @@ import os
 
 import torch
 
-from ..trainer import MetricCallback, InferenceCallback
-from ..utils import create_logger, TensorboardWriter, DEVICE
+from modeling.trainer import MetricCallback, InferenceCallback
+from modeling.utils import create_logger, TensorboardWriter, DEVICE
 
 LOGGER = create_logger(name=__name__)
 

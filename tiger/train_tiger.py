@@ -9,9 +9,8 @@ from modeling.dataset import Dataset
 from modeling.loss import IdentityLoss
 from modeling.metric import NDCGSemanticMetric, RecallSemanticMetric
 from modeling.models import TigerModel
-from modeling.utils import parse_args, create_logger, fix_random_seed
 from modeling.trainer import Trainer
-
+from modeling.utils import parse_args, create_logger, fix_random_seed
 
 LOGGER = create_logger(name=__name__)
 SEED_VALUE = 42

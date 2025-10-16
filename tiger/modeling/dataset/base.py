@@ -1,7 +1,7 @@
 import json
 import logging
 
-from .samplers import TrainSampler, EvalSampler
+from modeling.dataset.samplers import TrainSampler, EvalSampler
 
 LOGGER = logging.getLogger(__name__)
 
