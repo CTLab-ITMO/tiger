@@ -24,7 +24,7 @@ class TensorboardWriter(SummaryWriter):
         super().__init__(
             log_dir=os.path.join(
                 logs_dir,
-                f'{experiment_name}_{datetime.datetime.now().strftime('%Y-%m-%dT%H:%M' if use_time else '')}'
+                f'{experiment_name}_{datetime.datetime.now().strftime("%Y-%m-%dT%H:%M" if use_time else "")}'
             )
         )
 
