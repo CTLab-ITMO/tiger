@@ -84,7 +84,7 @@ Because there is no official TIGER reference implementation, we compare on Beaut
 Following the original setup, we report NDCG (N) and Hit Rate (H) with @5, @10, and additionaly @20 cutoffs.
 
 
-| Model  | Dataset | N@5         | N@10        | N@20        | H@5         | H@10        | N@20        |
+| Model  | Dataset | N@5         | N@10        | N@20        | H@5         | H@10        | H@20        |
 |--------|---------|-------------|-------------|-------------|-------------|-------------|-------------|
 | SASRec | Beauty  | 0.02087     | 0.02718     | 0.03447     | 0.03197     | 0.051647    | 0.08071     |
 | TIGER  | Beauty  | **0.02524** | **0.03191** | **0.03940** | **0.03756** | **0.05822** | **0.08800** |

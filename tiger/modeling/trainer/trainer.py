@@ -79,6 +79,10 @@ class Trainer:
         LOGGER.debug('Start training...')
 
         while (step_num < 200_000):
+            if self._epoch_cnt is not None and epoch_num >= self._epoch_cnt:
+                LOGGER.debug(
+                    'Reached the maximum number of epochs ({}). Finish training'.format(self._epoch_cnt))
+                break
             if best_epoch + self._epochs_threshold < epoch_num:
                 LOGGER.debug(
                     'There is no progress during {} epochs. Finish training'.format(self._epochs_threshold))
